@@ -1,0 +1,345 @@
+<style>
+
+  .custom-card {
+    margin: 5px;
+    width: 100% !important;
+  }
+  .custom-card:hover {
+    box-shadow: 0 0 13px 0px rgb(0 0 0 / 12%);
+  }
+  
+  .custom-page-header {
+    padding: 15px 75px 15px 75px;
+    background-color: #f9f9f9;
+    text-align: center;
+  }
+  
+  .card-body {
+    display: flex;
+  }
+  
+  .DataTable--semantic-data-table {
+    position: relative;
+    height: auto;
+    padding-top: 15px;
+  }
+  
+  thead {
+    display: none;
+  }
+  
+  .knowledge-panel-trigger:hover .knowledge-panel-trigger-button {
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  .knowledge-panel-trigger-button {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s;
+  }
+  
+  .KeywordTypeQuery--component  {
+    position: sticky;
+    top: 70px;
+    z-index: 5;
+    background: white;
+  }
+
+  [data-flex-layout~=centered], [data-flex-layout*=column][data-flex-layout*=-center], [data-flex-layout*=row][data-flex-layout*=center-] {
+  align-items: end;
+  }
+  
+  </style>
+  
+  [[#*inline 'knowledgePanelFrame']]
+  <mp-knowledge-panel-frame id='[[id]]' template='{{> template}}'>
+    <template id='template'>
+      {{#if iri}}
+      [[> style]]
+      <div
+          class='knowledge-panel-frame'
+          data-flex-self='size-1of3'
+      >
+        <div class='knowledge-panel-frame__buttons'>
+          <mp-event-trigger type='KnowledgePanel.Close' targets='["[[id]]"]'>
+            <button class='knowledge-panel-frame__button'>
+              <i class='fa fa-times'></i>
+            </button>
+          </mp-event-trigger>
+        </div>
+        <mp-knowledge-panel iri='{{iri}}'></mp-knowledge-panel>
+      </div>
+      {{/if}}
+    </template>
+  </mp-knowledge-panel-frame>
+  [[/inline]]
+  
+  <div class='page'>
+    <div class='custom-page-header'>
+      <div style='margin-bottom: 15px;'>
+        <img height='50px' src='/assets/nobel-coin.png'><br>
+      </div>
+      <span style='font-size: 30px; color: #cea152;'><b><mp-label iri='[[this]]'></mp-label></b></span>
+      <semantic-query
+        query='
+          PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+          SELECT DISTINCT (GROUP_CONCAT(DISTINCT STR(?name) ; separator=", ") as ?laureates) ?category ?year (GROUP_CONCAT(DISTINCT STR(?motivation) ; separator=" & ") as ?motivations) WHERE {
+              ?? <http://data.nobelprize.org/terms/category> ?category;
+                <http://data.nobelprize.org/terms/year> ?year;
+                ^<http://data.nobelprize.org/terms/nobelPrize> ?laureate;
+                <http://purl.org/dc/terms/hasPart> ?LaureateAward.
+            ?LaureateAward <http://data.nobelprize.org/terms/laureate> ?Laureate;
+                          <http://data.nobelprize.org/terms/motivation> ?motivation.
+            ?laureate rdfs:label ?name.
+            FILTER(LANG(?motivation)="en")
+          } GROUP BY ?category ?year' 
+      template='{{> template}}'>
+      <template id='template'>
+        {{#each bindings}}
+        <div class='page__body'>
+        <h2>The Nobel Prize in <mp-label iri="{{category.value}}"></mp-label> {{year.value}} was awarded to {{laureates.value}} "{{motivations.value}}"</h2>
+        </div>
+        {{/each}}
+      </template>
+      </semantic-query>
+    </div>
+    <div class='page__body'>
+      <div data-flex-layout='row stretch-stretch'>
+        <div data-flex-self='md-full'>
+          <div class="row row-cols-md-8">
+            <semantic-query
+              query='
+                PREFIX owl: <http://www.w3.org/2002/07/owl#>
+                PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
+                SELECT DISTINCT ?laureate ?motivation ?share (1/?share*100 as ?percent) WHERE {
+                  BIND(?? as ?s)
+                  ?s <http://purl.org/dc/terms/hasPart> ?LaureateAward.
+                  ?LaureateAward <http://data.nobelprize.org/terms/laureate> ?laureate;
+                                <http://data.nobelprize.org/terms/motivation> ?motivation;
+                                <http://data.nobelprize.org/terms/share> ?share.
+                  FILTER(LANG(?motivation)="en")
+                }' 
+              template='{{> template}}'>
+            <template id='template'>
+              {{#each bindings}}
+                <bs-card class='custom-card'>
+                  <bs-card-body>
+                    <semantic-query 
+                      query='
+                        PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+                        PREFIX wd: <http://www.wikidata.org/entity/>
+                        PREFIX wiki: <https://wikidata.metaphacts.com/>
+                        SELECT DISTINCT (REPLACE(STR(SAMPLE(?images)), "http", "https", "i") AS ?image) WHERE {
+                          {{laureate}} owl:sameAs ?entity.
+                          FILTER (!isBlank(?entity))
+                          SERVICE wiki:sparql {
+                            ?entity wdt:P18 ?images.
+                          } 
+                        }'
+                      template='{{> template}}'>
+                    <template id='template'>
+                      {{#each bindings}}
+                      <div style='padding-right: 15px;'>
+                        <img src='{{image.value}}' style="height: 200px; width: 180px; object-fit: cover;">
+                      </div>
+                      {{/each}}
+                    </template>
+                    </semantic-query>
+                    <div style='width: 50%;'> 
+                      <bs-card-title class="text-break title-kp mb-1">
+                        <semantic-link iri="{{laureate.value}}"></semantic-link>
+                      </bs-card-title>
+                      <semantic-query 
+                        query='
+                        PREFIX wiki: <https://wikidata.metaphacts.com/>
+                        SELECT DISTINCT ?desc  WHERE {
+                          {{laureate}} owl:sameAs ?entity.
+                          FILTER (!isBlank(?entity))
+                          SERVICE wiki:sparql {
+                            ?entity <http://schema.org/description> ?desc.
+                            FILTER(LANG(?desc)="en")
+                          }    
+                        } '
+                        template='{{> template}}'>
+                      <template id='template'>
+                        {{#each bindings}}
+                        <p style="color: #545454; font-size: smaller;">{{desc.value}}</p>
+                        {{/each}}
+                      </template>
+                      </semantic-query>
+                      <p style="color: #545454;"><b>Motivation:</b> {{motivation.value}}</p>
+                      <span style="color: #545454;"><b>Affiliation: </b> </span>
+                      <semantic-query 
+                        query='
+                        PREFIX wiki: <https://wikidata.metaphacts.com/>
+                        SELECT DISTINCT ?affiliation  WHERE {
+                          {{laureate}} <http://dbpedia.org/ontology/affiliation> ?affiliation.
+                        } '
+                        template='{{> template}}'>
+                      <template id='template'>
+                        {{#each bindings}}
+                        {{#if @first}} {{else}}, {{#if @last}} {{else}} {{/if}} {{/if}}
+                        <mp-label iri="{{affiliation.value}}"></mp-label>
+                        {{/each}}
+                      </template>
+                      </semantic-query>
+                    </div>
+                    <div class='row' data-flex-layout="row center-left">
+                      <div class='col-sm-8'>
+                      </div>
+                      <div class='col-sm-4' style='align-items: end;' data-flex-layout="row center-right">
+                        <div style='position: absolute; top: 8px; right: 8px;'>
+                          <mp-knowledge-panel-trigger iri='{{laureate.value}}' target='knowledge-panel'>
+                            <button class='btn btn-link btn-sm' style='text-align: end;'>
+                              <i class='fa fa-info-circle fa-lg'></i>
+                            </button>
+                          </mp-knowledge-panel-trigger>
+                        </div>
+                        <p style="color: #cea152;"><b>Prize share:</b> 1/{{share.value}} ({{number-toFixed percent.value 0}}%)</p>
+                      </div>
+                    </div>
+                  </bs-card-body>
+                </bs-card>
+              {{/each}}
+            </template>
+            </semantic-query>
+          </div>
+        </div>
+        [[#> knowledgePanelFrame id='knowledge-panel']]
+          [[#*inline 'style']]
+            <style>
+              *[data-knowledge-panel-iri-example3="{{iri}}"] {
+                border: 1px solid lightblue;
+                box-shadow: 0 0 15px lightblue;
+              }
+            </style>
+          [[/inline]]
+        [[/knowledgePanelFrame]]
+      </div>
+      <br>
+      <semantic-query
+        query='
+          PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+          SELECT DISTINCT ?year WHERE {
+            ?? <http://data.nobelprize.org/terms/year> ?year;
+          }' 
+      template='{{> template}}'>
+      <template id='template'>
+        {{#each bindings}}
+        <span style='font-size: 25px; color: #cea152; padding-bottom: 10px;'>Other Nobel prizes in the year {{year.value}}</span>
+        {{/each}}
+      </template>
+      </semantic-query>
+      <div data-flex-layout='row stretch-stretch'>
+        <div data-flex-self='md-full'>
+          <semantic-table
+            query='
+            SELECT DISTINCT ?nobel ?laureate (1/?Share*100 as ?share) WHERE {
+              ?? <http://data.nobelprize.org/terms/year> ?year.
+              ?s ?p ?year.
+              ?s <http://data.nobelprize.org/terms/laureate> ?laureate.
+              ?s ^<http://purl.org/dc/terms/hasPart> ?nobel.
+              ?laureate ^<http://data.nobelprize.org/terms/laureate>/<http://data.nobelprize.org/terms/share> ?Share.
+              FILTER(?nobel != ??)
+            } ORDER BY ASC (?nobel)'
+            options='{"enableGrouping": false, "showFilter": false, "groupingOptions": {"groupedBy": ["nobel"], "showOnlyAggregatedValue": true} }'
+            column-configuration='[
+              {"variableName": "nobel", "displayName": "Nobel", "cellTemplate": "{{> template}}"} 
+            ]'>
+            <template id='template'>
+              <div class='row'>
+                <div class='col-sm-6'>
+                  <div style='display: flex; flex-direction: row;' >
+                  <!-- image -->
+                    <div style='padding-right: 10px;'>
+                      <img height='25px' src='/assets/nobel-coin.png'>
+                    </div>
+  
+                    <!-- header & category -->
+                    <div>
+                      <h5><b><semantic-link iri="{{nobel.value}}"></semantic-link></b><br></h5> 
+  
+                      <semantic-query 
+                        query='SELECT ?category WHERE { 
+                                {{nobel}} <http://data.nobelprize.org/terms/category> ?Category.
+                                ?Category rdfs:label ?category.
+                              }'
+                        template='{{> template}}'>
+                        <template id='template'>
+                          {{#each bindings}}
+                          <h6><b>{{category.value}}</b></h6>
+                          {{/each}}
+                        </template>
+                      </semantic-query>
+  
+                    </div>
+                  </div>
+                </div>
+                <div class='col-sm-6'>
+                  <semantic-query 
+                    query='
+                      PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+                      PREFIX wd: <http://www.wikidata.org/entity/>
+                      PREFIX wiki: <https://wikidata.metaphacts.com/>
+                      SELECT ?laureate ?motivation (REPLACE(STR(SAMPLE(?images)), "http", "https", "i") AS ?image) WHERE {
+                        {{nobel}} <http://purl.org/dc/terms/hasPart>/<http://data.nobelprize.org/terms/laureate> ?laureate.
+                        ?laureate <http://data.nobelprize.org/terms/laureateAward> ?laureateAward.
+                        ?laureateAward <http://data.nobelprize.org/terms/motivation> ?motivation.
+                        ?laureate owl:sameAs ?entity.
+                          FILTER(LANG(?motivation)="en")
+                          FILTER (!isBlank(?entity))
+                          SERVICE wiki:sparql {
+                          ?entity wdt:P18 ?images.
+                        } 
+                      } GROUP BY ?laureate ?motivation'
+                    template='{{> template}}'>
+                    <template id='template'>
+                      {{#each bindings}}
+                      <div class='row' >
+                        <div class='col-sm-2' style='text-align: end;' >
+                          <img src='{{image.value}}' style="height: 35px; width: 35px; object-fit: cover;">
+                        </div>
+                        <div class='col-sm-10'>
+                          <div>
+                            <h5><b><mp-knowledge-panel-trigger target='second' iri='{{laureate.value}}'></mp-knowledge-panel-trigger></b></h5> 
+                            <p>{{motivation.value}}</p>
+                          </div>
+                        </div>
+                      </div>
+                      {{/each}}
+                    </template>
+                  </semantic-query>
+                </div>
+              </div>
+            </template>
+          </semantic-table>
+          <!-- <span style='font-size: 25px; color: #cea152; padding-bottom: 10px;'>Other Nobel prizes in the same category </span>
+          <semantic-table  query='
+            SELECT DISTINCT ?nobelPrize ?category ?laureate ?motivation ?year ?share WHERE {
+              <{{page-resource}}> <http://data.nobelprize.org/terms/category> ?category.
+              ?nobelPrize <http://data.nobelprize.org/terms/category> ?category.
+              ?nobelPrize <http://data.nobelprize.org/terms/laureate> ?laureate. 
+              ?laureate <http://data.nobelprize.org/terms/laureateAward>/<http://data.nobelprize.org/terms/motivation> ?motivation.
+              ?laureate ^<http://data.nobelprize.org/terms/laureate>/<http://data.nobelprize.org/terms/share> ?share.
+              ?laureate <http://data.nobelprize.org/terms/laureateAward>/<http://data.nobelprize.org/terms/year> ?year.
+      
+              
+            # ?s ^<http://purl.org/dc/terms/hasPart>/<http://data.nobelprize.org/terms/year> ?year;
+            #     <http://data.nobelprize.org/terms/laureate> ?laureate;
+            #      <http://data.nobelprize.org/terms/motivation> ?motivation.
+            #  ?s ^<http://purl.org/dc/terms/hasPart> ?nobelPrize.
+            #  ?laureate ^<http://data.nobelprize.org/terms/laureate>/<http://data.nobelprize.org/terms/share> ?share.
+      
+            FILTER(LANG(?motivation)="en")
+            FILTER(?nobelPrize != <{{page-resource}}>)
+            }
+            ORDER BY DESC (?year) '
+          >
+          </semantic-table> -->
+        </div>
+        <mp-knowledge-panel-frame id='second'></mp-knowledge-panel-frame>
+      </div>
+    </div>
+    
+  </div>
