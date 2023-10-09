@@ -1,0 +1,237 @@
+[[> Platform:KnowledgePanelStyles]]
+
+<div class='knowledge-panel'>
+  <div class='knowledge-panel__header'>
+    <div class='knowledge-panel__thumbnail'>
+      <semantic-query query='
+        PREFIX owl: <http://www.w3.org/2002/07/owl#>
+        PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+        PREFIX wd: <http://www.wikidata.org/entity/>
+        PREFIX wiki: <https://wikidata.metaphacts.com/>
+        SELECT (REPLACE(SAMPLE(STR(?images)), "http", "https", "i") AS ?image) WHERE {
+          BIND (<[[this]]> as ?subject)
+          ?subject owl:sameAs ?entity.
+          FILTER (!isBlank(?entity))
+          SERVICE wiki:sparql {
+            ?entity wdt:P18 ?images.
+          }
+        }' template='{{>tpl }}'>
+        <template id='tpl'>
+          {{#each bindings}}
+          <div>
+            <img src='{{image.value}}'>
+          </div>
+          {{/each}}
+        </template>
+      </semantic-query>
+    </div>
+    <mp-popover>
+      <mp-popover-trigger placement='bottom' trigger='["hover", "focus"]'>
+        <div class='knowledge-panel__title'>
+          <mp-label iri='{{page-resource}}'></mp-label>
+          <br>
+          <semantic-query 
+            query='
+            PREFIX wiki: <https://wikidata.metaphacts.com/>
+            SELECT DISTINCT ?desc  WHERE {
+              <[[this]]> owl:sameAs ?entity.
+              FILTER (!isBlank(?entity))
+              SERVICE wiki:sparql {
+                ?entity <http://schema.org/description> ?desc.
+                FILTER(LANG(?desc)="en")
+              }    
+            } '
+            template='{{> template}}'>
+            <template id='template'>
+              {{#each bindings}}
+              <p style="color: #545454; font-size: x-small;">{{desc.value}}</p>
+              {{/each}}
+            </template>
+          </semantic-query>
+        </div>
+      </mp-popover-trigger>
+      <mp-popover-content>
+        <mp-label iri='{{page-resource}}'></mp-label>
+      </mp-popover-content>
+    </mp-popover>
+  </div>
+  <div class='knowledge-panel__content'>
+    <div class='knowledge-panel__link'>
+      <semantic-link iri='[[this]]'>
+        <i class='fa fa-link'></i><span class='knowledge-panel__link-text'>Navigate to resource</span>
+      </semantic-link>
+    </div>
+    <div class='knowledge-panel__uri'>
+      <div title='{{page-resource}}' class='knowledge-panel__uri-text'>
+        <b>URI:</b> {{page-resource}}
+      </div>
+      <mp-copy-to-clipboard text='{{page-resource}}'>
+        <button class='btn btn-link btn-sm knowledge-panel__uri-copy-button'>
+          <i class='fa fa-clipboard'></i>
+        </button>
+      </mp-copy-to-clipboard>
+    </div>
+    <semantic-query query="SELECT DISTINCT ?type WHERE { <{{page-resource}}> a ?type }"
+      template='{{> template}}'>
+      <template id='template'>
+        <b>Type</b>:
+        {{#each bindings}}
+          {{#if (isIri type)}}
+            <mp-label iri='{{type.value}}'></mp-label>
+          {{else}}
+            {{type.value}}
+          {{/if}}
+          {{#unless @last}},&nbsp;{{/unless}}
+        {{/each}}
+      </template>
+    </semantic-query>
+    <div class='knowledge-panel__datasets'>
+        {{#> Assets:DatasetsHelpers::datasets-list-for-iri iri=(page-resource)}}
+        {{/Assets:DatasetsHelpers::datasets-list-for-iri}}
+    </div>
+  </div>
+  <div style='padding: 10px;' >
+    <semantic-query
+      query='
+        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+        PREFIX owl: <http://www.w3.org/2002/07/owl#>
+        PREFIX wiki: <https://wikidata.metaphacts.com/>
+        PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+        PREFIX wd: <http://www.wikidata.org/entity/>
+        PREFIX schema: <http://schema.org/>
+        PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
+        PREFIX dbo: <http://dbpedia.org/ontology/>
+        SELECT DISTINCT ?o (SAMPLE(?ID) as ?id) WHERE {
+          BIND(<[[this]]> as ?s)
+          ?s owl:sameAs ?o
+          FILTER (!isBlank(?o))
+          SERVICE wiki:sparql {
+            ?o wdt:P214 ?ID
+          } 
+        } GROUP BY ?o'
+      template='{{> template}}'>
+      <template id='template'>
+        {{#each bindings}}
+        <semantic-query
+          query='
+            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            PREFIX owl: <http://www.w3.org/2002/07/owl#>
+            PREFIX wiki: <https://wikidata.metaphacts.com/>
+            PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+            PREFIX wd: <http://www.wikidata.org/entity/>
+            PREFIX schema: <http://schema.org/>
+            PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
+            PREFIX dbo: <http://dbpedia.org/ontology/>
+            SELECT DISTINCT (SAMPLE(?comm) as ?comment) WHERE {
+              BIND(IRI(CONCAT("http://viaf.org/viaf/", STR({{id}}))) as ?sourceID)
+              SERVICE <https://dbpedia.org/sparql/> {
+                  ?dbpedia owl:sameAs ?sourceID.
+                  ?dbpedia dbo:abstract ?comm.
+                  FILTER(LANG(?comm)="en")
+              } ephedra:Prior ephedra:executeLast true .
+            }'
+          template='{{> template}}'>
+          <template id='template'>
+              {{#each bindings}}
+              <mp-text-truncate lines="5" expand="{{> expand}}" collapse="{{> collapse}}">
+                <template id="expand"><span style="color: gray;">...<a>read more</a></span></template>
+                <template id="collapse"><span style="color: gray;">(<a>show less</a>)</span></template>
+                <p style='text-align: justify;'>{{{comment.value}}}</p>
+              </mp-text-truncate>
+              {{/each}}
+          </template>
+        </semantic-query>
+        {{/each}}
+      </template>
+    </semantic-query>
+    <br>
+    <semantic-query query='
+      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+      SELECT DISTINCT ?dob ?birthCityLabel (GROUP_CONCAT(DISTINCT(?birthCountryLabel);SEPARATOR="/") AS ?birthCountryLabels) ?death ?deathCityLabel (GROUP_CONCAT(DISTINCT(?deathCountryLabel);SEPARATOR="/") AS ?deathCountryLabels)  WHERE {
+        BIND (<[[this]]> as ?subject)
+        ?subject <http://dbpedia.org/property/dateOfBirth> ?dob.
+        ?subject <http://dbpedia.org/ontology/birthPlace> ?birthCity;
+                <http://dbpedia.org/ontology/birthPlace> ?birthCountry.
+        OPTIONAL {
+          ?subject <http://dbpedia.org/property/dateOfDeath> ?death;
+                  <http://dbpedia.org/ontology/deathPlace> ?deathCity;
+                  <http://dbpedia.org/ontology/deathPlace> ?deathCountry.
+          ?deathCity a <http://dbpedia.org/ontology/City>;
+                  rdfs:label ?deathCityLabel.
+          ?deathCountry a <http://dbpedia.org/ontology/Country>;
+                  rdfs:label ?deathCountryLabel.
+          FILTER(lang(?deathCityLabel)="en")
+          FILTER(lang(?deathCountryLabel)="en")
+        }
+        ?birthCity a <http://dbpedia.org/ontology/City>;
+                  rdfs:label ?birthCityLabel.
+        ?birthCountry a <http://dbpedia.org/ontology/Country>;
+                  rdfs:label ?birthCountryLabel.
+        FILTER(lang(?birthCityLabel)="en")
+        FILTER(lang(?birthCountryLabel)="en")
+      } GROUP BY ?dob ?birthCityLabel ?death ?deathCityLabel' 
+      template='{{>tpl }}'>
+      <template id='tpl'>
+        {{#each bindings}}
+        {{#if dob}}<p><i class="fa fa-birthday-cake">&nbsp;&nbsp;&nbsp;</i>Born on {{dob.value}} in {{birthCityLabel.value}}, {{birthCountryLabels.value}}</p>{{/if}}
+        {{#if death}}<p><i class="fa fa-calendar">&nbsp;&nbsp;&nbsp;</i>Died on {{death.value}} in {{deathCityLabel.value}}, {{deathCountryLabels.value}}</p>{{/if}}
+        {{/each}}
+      </template>
+    </semantic-query>
+    <semantic-query query='
+      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+      SELECT DISTINCT (GROUP_CONCAT(DISTINCT STR(?name) ; separator=" & ") as ?names) ?affiliationCountryLabel WHERE {
+        BIND (<[[this]]> as ?subject)
+        ?subject <http://dbpedia.org/ontology/affiliation> ?affiliation.
+        ?affiliation rdfs:label ?name.
+        ?affiliation <http://dbpedia.org/ontology/country> ?affiliationCountry.
+        ?affiliationCountry rdfs:label ?affiliationCountryLabel.
+        FILTER(lang(?affiliationCountryLabel)="en")
+      } GROUP BY ?affiliationCountryLabel' template='{{>tpl }}'>
+      <template id='tpl'>
+        {{#each bindings}}
+        {{#if names}} <p><i class="fa fa-university">&nbsp;</i> Affiliated with {{names.value}}, {{affiliationCountryLabel.value}} </p> {{/if}}
+        {{/each}}
+      </template>
+    </semantic-query>
+    <semantic-map 
+      query='
+        PREFIX owl: <http://www.w3.org/2002/07/owl#>
+        PREFIX : <http://www.metaphacts.com/resource/>
+        PREFIX wiki: <https://wikidata.metaphacts.com/>
+        PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+        PREFIX wd: <http://www.wikidata.org/entity/>
+        PREFIX schema: <http://schema.org/>
+        PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
+        SELECT DISTINCT ?subject ?label ?location ?wkt (GROUP_CONCAT(DISTINCT(?countryLabel);SEPARATOR="/") AS ?countryLabels) WHERE {
+        BIND (<[[this]]> as ?subject)
+          {
+            ?subject <http://dbpedia.org/ontology/birthPlace> ?location;
+                      <http://dbpedia.org/ontology/birthPlace> ?country.
+            BIND("Birth Place" as ?label)
+          } UNION {
+            ?subject <http://dbpedia.org/ontology/deathPlace> ?location;
+                      <http://dbpedia.org/ontology/birthPlace> ?country.
+            BIND("Death Place" as ?label)
+          } UNION {
+            ?subject  <http://dbpedia.org/ontology/affiliation> ?affiliation.
+            ?affiliation <http://dbpedia.org/ontology/city> ?location;
+                          <http://dbpedia.org/ontology/country> ?country.
+            BIND("Affiliation" as ?label)
+          }
+          ?country a <http://dbpedia.org/ontology/Country>;
+                    rdfs:label ?countryLabel.
+          FILTER(lang(?countryLabel)="en")
+          ?location a <http://dbpedia.org/ontology/City>;
+                  owl:sameAs ?entity.
+          FILTER (!isBlank(?entity))
+          SERVICE wiki:sparql {
+              ?entity wdt:P625 ?wkt.
+          } ephedra:Prior ephedra:executeLast true .
+        } GROUP BY ?subject ?label ?location ?wkt' 
+      fix-zoom-level='1' tuple-template='<b><u>{{label.value}}</u></b><br><mp-label iri="{{location.value}}"></mp-label>, {{countryLabels.value}}<br><br>'>
+    </semantic-map>
+  </div>
+</div>
+
+

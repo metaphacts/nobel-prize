@@ -1,0 +1,160 @@
+[[> Platform:KnowledgePanelStyles]]
+
+<div class='knowledge-panel'>
+  <div class='knowledge-panel__header'>
+    <mp-popover>
+      <mp-popover-trigger placement='bottom' trigger='["hover", "focus"]'>
+        <div class='knowledge-panel__title'>
+          <mp-label iri='{{page-resource}}'></mp-label>
+          <br>
+          <semantic-query 
+            query='
+            PREFIX wiki: <https://wikidata.metaphacts.com/>
+            SELECT DISTINCT ?desc  WHERE {
+              <[[this]]> owl:sameAs ?entity.
+              FILTER (!isBlank(?entity))
+              SERVICE wiki:sparql {
+                ?entity <http://schema.org/description> ?desc.
+                FILTER(LANG(?desc)="en")
+              }    
+            } '
+            template='{{> template}}'>
+            <template id='template'>
+              {{#each bindings}}
+              <p style="color: #545454; font-size: x-small;">{{desc.value}}</p>
+              {{/each}}
+            </template>
+          </semantic-query>
+        </div>
+      </mp-popover-trigger>
+      <mp-popover-content>
+        <mp-label iri='{{page-resource}}'></mp-label>
+      </mp-popover-content>
+    </mp-popover>
+  </div>
+  <div class='knowledge-panel__content'>
+    <div class='knowledge-panel__link'>
+      <semantic-link iri='[[this]]'>
+        <i class='fa fa-link'></i><span class='knowledge-panel__link-text'>Navigate to resource</span>
+      </semantic-link>
+    </div>
+    <div class='knowledge-panel__uri'>
+      <div title='{{page-resource}}' class='knowledge-panel__uri-text'>
+        <b>URI:</b> {{page-resource}}
+      </div>
+      <mp-copy-to-clipboard text='{{page-resource}}'>
+        <button class='btn btn-link btn-sm knowledge-panel__uri-copy-button'>
+          <i class='fa fa-clipboard'></i>
+        </button>
+      </mp-copy-to-clipboard>
+    </div>
+    <semantic-query query="SELECT DISTINCT ?type WHERE { <{{page-resource}}> a ?type }"
+      template='{{> template}}'>
+      <template id='template'>
+        <b>Type</b>:
+        {{#each bindings}}
+          {{#if (isIri type)}}
+            <semantic-link uri='{{type.value}}'></semantic-link>
+          {{else}}
+            {{type.value}}
+          {{/if}}
+          {{#unless @last}},&nbsp;{{/unless}}
+        {{/each}}
+      </template>
+    </semantic-query>
+    <div class='knowledge-panel__datasets'>
+        {{#> Assets:DatasetsHelpers::datasets-list-for-iri iri=(page-resource)}}
+        {{/Assets:DatasetsHelpers::datasets-list-for-iri}}
+    </div>
+  </div>
+  <div style='padding: 10px;' >
+    <semantic-query
+      query='
+        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+        SELECT DISTINCT (GROUP_CONCAT(DISTINCT STR(?name) ; separator=", ") as ?laureates) ?category ?year (GROUP_CONCAT(DISTINCT STR(?motivation) ; separator=" & ") as ?motivations) WHERE {
+            <[[this]]> <http://data.nobelprize.org/terms/category> ?category;
+              <http://data.nobelprize.org/terms/year> ?year;
+              ^<http://data.nobelprize.org/terms/nobelPrize> ?laureate;
+              <http://purl.org/dc/terms/hasPart> ?LaureateAward.
+          ?LaureateAward <http://data.nobelprize.org/terms/laureate> ?Laureate;
+                        <http://data.nobelprize.org/terms/motivation> ?motivation.
+          ?laureate rdfs:label ?name.
+          FILTER(LANG(?motivation)="en")
+        } GROUP BY ?category ?year' 
+    template='{{> template}}'>
+    <template id='template'>
+      {{#each bindings}}
+      <p>The Nobel Prize in <mp-label iri="{{category.value}}"></mp-label> {{year.value}} was awarded to {{laureates.value}} "{{motivations.value}}"</p>
+      {{/each}}
+    </template>
+    </semantic-query>
+    <div class="row row-cols-md-8">
+      <semantic-query
+        query='
+          PREFIX owl: <http://www.w3.org/2002/07/owl#>
+          PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
+          SELECT DISTINCT ?laureate ?share (1/?share*100 as ?percent) WHERE {
+            BIND(<[[this]]> as ?s)
+            ?s <http://purl.org/dc/terms/hasPart> ?LaureateAward.
+            ?LaureateAward <http://data.nobelprize.org/terms/laureate> ?laureate;
+                          <http://data.nobelprize.org/terms/share> ?share.
+          }' 
+        template='{{> template}}'>
+      <template id='template'>
+        {{#each bindings}}
+          <bs-card style='margin: 5px; width: 100%;'>
+            <bs-card-body>
+              <semantic-query 
+                query='
+                  PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+                  PREFIX wd: <http://www.wikidata.org/entity/>
+                  PREFIX wiki: <https://wikidata.metaphacts.com/>
+                  SELECT DISTINCT (REPLACE(STR(SAMPLE(?images)), "http", "https", "i") AS ?image) WHERE {
+                    {{laureate}} owl:sameAs ?entity.
+                    FILTER (!isBlank(?entity))
+                    SERVICE wiki:sparql {
+                      ?entity wdt:P18 ?images.
+                    } 
+                  }'
+                template='{{> template}}'>
+              <template id='template'>
+                {{#each bindings}}
+                <div style='padding-right: 15px;'>
+                  <img src='{{image.value}}' style="height: 50px; width: 45px; object-fit: cover;">
+                </div>
+                {{/each}}
+              </template>
+              </semantic-query>
+              <div> 
+                <bs-card-title class="text-break title-kp mb-1">
+                  <h5><mp-label iri="{{laureate.value}}"></mp-label></h5>
+                </bs-card-title>
+                <semantic-query 
+                  query='
+                  PREFIX wiki: <https://wikidata.metaphacts.com/>
+                  SELECT DISTINCT ?desc  WHERE {
+                    {{laureate}} owl:sameAs ?entity.
+                    FILTER (!isBlank(?entity))
+                    SERVICE wiki:sparql {
+                      ?entity <http://schema.org/description> ?desc.
+                      FILTER(LANG(?desc)="en")
+                    }    
+                  } '
+                  template='{{> template}}'>
+                <template id='template'>
+                  {{#each bindings}}
+                  <p style="color: #545454; font-size: smaller;">{{desc.value}}</p>
+                  {{/each}}
+                </template>
+                </semantic-query>
+              </div>
+            </bs-card-body>
+          </bs-card>
+        {{/each}}
+      </template>
+      </semantic-query>
+    </div>
+  </div>
+</div>
+
+
