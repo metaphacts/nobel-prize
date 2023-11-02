@@ -9,8 +9,8 @@
   }
   
   .custom-page-header {
-    padding: 15px 75px 15px 75px;
-    background-color: #f9f9f9;
+    padding: 16px 64px 16px 78px;
+    background-color: var(--mp-color-dark-50);
     text-align: center;
   }
   
@@ -21,7 +21,7 @@
   .DataTable--semantic-data-table {
     position: relative;
     height: auto;
-    padding-top: 15px;
+    padding-top: 16px;
   }
   
   thead {
@@ -45,45 +45,45 @@
     z-index: 5;
     background: white;
   }
-
-  [data-flex-layout~=centered], [data-flex-layout*=column][data-flex-layout*=-center], [data-flex-layout*=row][data-flex-layout*=center-] {
-  align-items: end;
-  }
   
   </style>
   
-  [[#*inline 'knowledgePanelFrame']]
-  <mp-knowledge-panel-frame id='[[id]]' template='{{> template}}'>
-    <template id='template'>
-      {{#if iri}}
-      [[> style]]
-      <div
-          class='knowledge-panel-frame'
-          data-flex-self='size-1of3'
-      >
-        <div class='knowledge-panel-frame__buttons'>
-          <mp-event-trigger type='KnowledgePanel.Close' targets='["[[id]]"]'>
-            <button class='knowledge-panel-frame__button'>
-              <i class='fa fa-times'></i>
-            </button>
-          </mp-event-trigger>
+  <template-fragment id='knowledgePanelFrame'>
+    <mp-knowledge-panel-frame id='{{id}}' template='{{> template}}'>
+      <template id='template'>
+        {{#if iri}}
+        <style>
+          *[data-knowledge-panel-iri-example3="{{iri}}"] {
+            border: 1px solid lightblue;
+            box-shadow: 0 0 15px lightblue;
+          }
+        </style> 
+        <div
+            class='knowledge-panel-frame'
+            data-flex-self='size-1of3'
+        >
+          <div class='knowledge-panel-frame__buttons'>
+            <mp-event-trigger type='KnowledgePanel.Close' targets='["{{id}}"]'>
+              <button class='knowledge-panel-frame__button'>
+                <i class='fa fa-times'></i>
+              </button>
+            </mp-event-trigger>
+          </div>
+          <mp-knowledge-panel iri='{{iri}}'></mp-knowledge-panel>
         </div>
-        <mp-knowledge-panel iri='{{iri}}'></mp-knowledge-panel>
-      </div>
-      {{/if}}
-    </template>
-  </mp-knowledge-panel-frame>
-  [[/inline]]
+        {{/if}}
+      </template>
+    </mp-knowledge-panel-frame>
+  </template-fragment>
   
   <div class='page'>
     <div class='custom-page-header'>
-      <div style='margin-bottom: 15px;'>
-        <img height='50px' src='/assets/nobel-coin.png'><br>
+      <div style='margin-bottom: 16px;'>
+        <img height='50px' src='/assets/nobel.svg'><br>
       </div>
-      <span style='font-size: 30px; color: #cea152;'><b><mp-label iri='[[this]]'></mp-label></b></span>
+      <span style='font-size: 30px;'><b><mp-label iri='{{page-resource}}'></mp-label></b></span>
       <semantic-query
         query='
-          PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
           SELECT DISTINCT (GROUP_CONCAT(DISTINCT STR(?name) ; separator=", ") as ?laureates) ?category ?year (GROUP_CONCAT(DISTINCT STR(?motivation) ; separator=" & ") as ?motivations) WHERE {
               ?? <http://data.nobelprize.org/terms/category> ?category;
                 <http://data.nobelprize.org/terms/year> ?year;
@@ -110,8 +110,6 @@
           <div class="row row-cols-md-8">
             <semantic-query
               query='
-                PREFIX owl: <http://www.w3.org/2002/07/owl#>
-                PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
                 SELECT DISTINCT ?laureate ?motivation ?share (1/?share*100 as ?percent) WHERE {
                   BIND(?? as ?s)
                   ?s <http://purl.org/dc/terms/hasPart> ?LaureateAward.
@@ -127,9 +125,6 @@
                   <bs-card-body>
                     <semantic-query 
                       query='
-                        PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-                        PREFIX wd: <http://www.wikidata.org/entity/>
-                        PREFIX wiki: <https://wikidata.metaphacts.com/>
                         SELECT DISTINCT (REPLACE(STR(SAMPLE(?images)), "http", "https", "i") AS ?image) WHERE {
                           {{laureate}} owl:sameAs ?entity.
                           FILTER (!isBlank(?entity))
@@ -140,19 +135,18 @@
                       template='{{> template}}'>
                     <template id='template'>
                       {{#each bindings}}
-                      <div style='padding-right: 15px;'>
-                        <img src='{{image.value}}' style="height: 200px; width: 180px; object-fit: cover;">
+                      <div style='padding-right: 16px;'>
+                        <img src='{{image.value}}' alt='' style="height: 200px; width: 180px; object-fit: cover;">
                       </div>
                       {{/each}}
                     </template>
                     </semantic-query>
-                    <div style='width: 50%;'> 
+                    <div> 
                       <bs-card-title class="text-break title-kp mb-1">
                         <semantic-link iri="{{laureate.value}}"></semantic-link>
                       </bs-card-title>
                       <semantic-query 
                         query='
-                        PREFIX wiki: <https://wikidata.metaphacts.com/>
                         SELECT DISTINCT ?desc  WHERE {
                           {{laureate}} owl:sameAs ?entity.
                           FILTER (!isBlank(?entity))
@@ -164,12 +158,12 @@
                         template='{{> template}}'>
                       <template id='template'>
                         {{#each bindings}}
-                        <p style="color: #545454; font-size: smaller;">{{desc.value}}</p>
+                        <p style="font-size: smaller;">{{desc.value}}</p>
                         {{/each}}
                       </template>
                       </semantic-query>
-                      <p style="color: #545454;"><b>Motivation:</b> {{motivation.value}}</p>
-                      <span style="color: #545454;"><b>Affiliation: </b> </span>
+                      <p><b>Motivation:</b> {{motivation.value}}</p>
+                      
                       <semantic-query 
                         query='
                         PREFIX wiki: <https://wikidata.metaphacts.com/>
@@ -178,6 +172,7 @@
                         } '
                         template='{{> template}}'>
                       <template id='template'>
+                        <span><b>Affiliation: </b> </span>
                         {{#each bindings}}
                         {{#if @first}} {{else}}, {{#if @last}} {{else}} {{/if}} {{/if}}
                         <mp-label iri="{{affiliation.value}}"></mp-label>
@@ -188,15 +183,15 @@
                     <div class='row' data-flex-layout="row center-left">
                       <div class='col-sm-8'>
                       </div>
-                      <div class='col-sm-4' style='align-items: end;' data-flex-layout="row center-right">
+                      <div class='col-sm-4' style='margin-top: 180px;' data-flex-layout="row center-right">
                         <div style='position: absolute; top: 8px; right: 8px;'>
                           <mp-knowledge-panel-trigger iri='{{laureate.value}}' target='knowledge-panel'>
                             <button class='btn btn-link btn-sm' style='text-align: end;'>
-                              <i class='fa fa-info-circle fa-lg'></i>
+                              <span class='material-symbols-outlined'>info</span>
                             </button>
                           </mp-knowledge-panel-trigger>
                         </div>
-                        <p style="color: #cea152;"><b>Prize share:</b> 1/{{share.value}} ({{number-toFixed percent.value 0}}%)</p>
+                        <span style="color: #cea152;"><b>Prize share:</b> 1/{{share.value}} ({{number-toFixed percent.value 0}}%)</span>
                       </div>
                     </div>
                   </bs-card-body>
@@ -206,16 +201,7 @@
             </semantic-query>
           </div>
         </div>
-        [[#> knowledgePanelFrame id='knowledge-panel']]
-          [[#*inline 'style']]
-            <style>
-              *[data-knowledge-panel-iri-example3="{{iri}}"] {
-                border: 1px solid lightblue;
-                box-shadow: 0 0 15px lightblue;
-              }
-            </style>
-          [[/inline]]
-        [[/knowledgePanelFrame]]
+        {{> ::knowledgePanelFrame id='knowledge-panel'}}   
       </div>
       <br>
       <semantic-query
@@ -227,7 +213,7 @@
       template='{{> template}}'>
       <template id='template'>
         {{#each bindings}}
-        <span style='font-size: 25px; color: #cea152; padding-bottom: 10px;'>Other Nobel prizes in the year {{year.value}}</span>
+        <span style='font-size: 25px; color: #cea152; padding-bottom: 16px;'>Other Nobel prizes in the year {{year.value}}</span>
         {{/each}}
       </template>
       </semantic-query>
@@ -252,8 +238,8 @@
                 <div class='col-sm-6'>
                   <div style='display: flex; flex-direction: row;' >
                   <!-- image -->
-                    <div style='padding-right: 10px;'>
-                      <img height='25px' src='/assets/nobel-coin.png'>
+                    <div style='padding-right: 8px;'>
+                      <img height='25px' src='/assets/nobel.svg'>
                     </div>
   
                     <!-- header & category -->
@@ -289,16 +275,20 @@
                         ?laureate owl:sameAs ?entity.
                           FILTER(LANG(?motivation)="en")
                           FILTER (!isBlank(?entity))
-                          SERVICE wiki:sparql {
-                          ?entity wdt:P18 ?images.
-                        } 
+                          OPTIONAL {
+                            SERVICE wiki:sparql {
+                            ?entity wdt:P18 ?images.
+                          } 
+                        }
                       } GROUP BY ?laureate ?motivation'
                     template='{{> template}}'>
                     <template id='template'>
                       {{#each bindings}}
                       <div class='row' >
                         <div class='col-sm-2' style='text-align: end;' >
-                          <img src='{{image.value}}' style="height: 35px; width: 35px; object-fit: cover;">
+                          {{#if image.value}}
+                          <img src='{{image.value}}' alt='' style="height: 35px; width: 35px; object-fit: cover;">
+                          {{/if}}
                         </div>
                         <div class='col-sm-10'>
                           <div>
@@ -314,29 +304,6 @@
               </div>
             </template>
           </semantic-table>
-          <!-- <span style='font-size: 25px; color: #cea152; padding-bottom: 10px;'>Other Nobel prizes in the same category </span>
-          <semantic-table  query='
-            SELECT DISTINCT ?nobelPrize ?category ?laureate ?motivation ?year ?share WHERE {
-              <{{page-resource}}> <http://data.nobelprize.org/terms/category> ?category.
-              ?nobelPrize <http://data.nobelprize.org/terms/category> ?category.
-              ?nobelPrize <http://data.nobelprize.org/terms/laureate> ?laureate. 
-              ?laureate <http://data.nobelprize.org/terms/laureateAward>/<http://data.nobelprize.org/terms/motivation> ?motivation.
-              ?laureate ^<http://data.nobelprize.org/terms/laureate>/<http://data.nobelprize.org/terms/share> ?share.
-              ?laureate <http://data.nobelprize.org/terms/laureateAward>/<http://data.nobelprize.org/terms/year> ?year.
-      
-              
-            # ?s ^<http://purl.org/dc/terms/hasPart>/<http://data.nobelprize.org/terms/year> ?year;
-            #     <http://data.nobelprize.org/terms/laureate> ?laureate;
-            #      <http://data.nobelprize.org/terms/motivation> ?motivation.
-            #  ?s ^<http://purl.org/dc/terms/hasPart> ?nobelPrize.
-            #  ?laureate ^<http://data.nobelprize.org/terms/laureate>/<http://data.nobelprize.org/terms/share> ?share.
-      
-            FILTER(LANG(?motivation)="en")
-            FILTER(?nobelPrize != <{{page-resource}}>)
-            }
-            ORDER BY DESC (?year) '
-          >
-          </semantic-table> -->
         </div>
         <mp-knowledge-panel-frame id='second'></mp-knowledge-panel-frame>
       </div>
