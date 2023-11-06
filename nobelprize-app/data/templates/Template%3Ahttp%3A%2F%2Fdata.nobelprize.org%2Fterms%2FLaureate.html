@@ -2,15 +2,15 @@
 <style>
   
   .custom-card-group {
-    padding: 20px;
-    border: 1px solid #e1e7f0;
+    padding: 24px;
+    border: 1px solid var(--mp-color-primary-100);
   }
   
   .custom-card-content {
     flex: 1 1 auto;
     overflow: hidden;
     height: 120px;
-    padding: 15px 10px 10px 0px;
+    padding: 16px 8px 8px 0px;
   }
   
   .DataTable--semantic-data-table {
@@ -19,8 +19,8 @@
   }
   
   .custom-page-header {
-    padding: 15px 75px 15px 75px;
-    background-color: #f9f9f9;
+    padding: 16px 64px 16px 78px;
+    background-color: var(--mp-color-dark-50);
     display: flex;
     align-items: start;
   }
@@ -31,28 +31,28 @@
   }
   
   .main-content {
-    padding: 10px 100px 10px 20px;
+    padding: 8px 96px 8px 24px;
     width: 100%;
-    border-top: 1px solid #e1e7f0;
+    border-top: 1px solid var(--mp-color-primary-100);
   }
   
   .navigationSidebar {
     width: 310px;
     margin-left: 75px;
-    border: 1px solid #e1e7f0;
+    border: 1px solid var(--mp-color-primary-100);
     z-index: 100;
     position: sticky;
     top: 70px;
     display: flex;
     flex-direction: column;
-    padding: 15px;
+    padding: 16px;
     line-height: 2.5em;
   }
   
   .page-nav-header {
-    margin-top: 10px;
+    margin-top: 8px;
     padding-bottom: 8px;
-    border-bottom: 1px solid #e1e7f0;
+    border-bottom: 1px solid var(--mp-color-primary-100);
   }
   
   .page-nav-button {
@@ -63,7 +63,7 @@
   
   .additional-information {
     display: grid; 
-    padding-top: 10px; 
+    padding-top: 8px; 
     grid-template-columns: repeat(2, 1fr); 
     gap: 10px;
     width: 50%;
@@ -88,10 +88,6 @@
     <div id='overview' class='custom-page-header'>
       <!--Fetching the image from wikidata external datasource-->
       <semantic-query query='
-        PREFIX owl: <http://www.w3.org/2002/07/owl#>
-        PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-        PREFIX wd: <http://www.wikidata.org/entity/>
-        PREFIX wiki: <https://wikidata.metaphacts.com/>
         SELECT (REPLACE(SAMPLE(STR(?images)), "http", "https", "i") AS ?image) WHERE {
           BIND (?? as ?subject)
           ?subject owl:sameAs ?entity.
@@ -103,23 +99,17 @@
         <template id='tpl'>
           {{#each bindings}}
           <div>
-            <img height='365' width='auto' src='{{image.value}}'>
+            <img height='365' width='auto' src='{{image.value}}' alt=''>
           </div>
           {{/each}}
         </template>
       </semantic-query>
-      <div style='padding: 0px 15px 15px 15px;'>
-        <p><i class="fa fa-graduation-cap fa-4x"></i></p>
+      <div style='padding: 0px 16px 16px 16px;'>
+        <p><span class="material-symbols-outlined" style='font-size: 64px;'>school</span></p>
         <h1 style='font-size: xx-large;'><mp-label iri='{{page-resource}}'></mp-label></h1>
         <!--fetching the short description about the laureate from wikidata and filtering out all, but those in English-->
         <semantic-query
           query='
-            PREFIX owl: <http://www.w3.org/2002/07/owl#>
-            PREFIX : <http://www.metaphacts.com/resource/>
-            PREFIX wiki: <https://wikidata.metaphacts.com/>
-            PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-            PREFIX wd: <http://www.wikidata.org/entity/>
-            PREFIX schema: <http://schema.org/>
             SELECT DISTINCT (SAMPLE(?desc) as ?description) WHERE {
               ?? owl:sameAs ?obj.
               FILTER (!isBlank(?obj))
@@ -131,7 +121,7 @@
           template='{{> template}}'>
         <template id='template'>
           {{#each bindings}}
-          <h3 style='margin-top: 5px;'>{{description.value}}</h3><br>
+          <h4 style='margin-top: -8px; color: #bb8a35;'>{{description.value}}</h4><br>
           {{/each}}
         </template>
         </semantic-query>
@@ -147,12 +137,12 @@
           <template id='tpl'>
             {{#each bindings}}
             <div style='display: flex; flex-direction: row;' >
-              <div style='padding-right: 10px;'>
-                <img height='35px' src='/assets/nobel-coin.png'>
+              <div style='padding-right: 8px;'>
+                <img height='35' src='/assets/nobel.svg' alt=''>
               </div>
               <div>
-                <h4 style='line-height: 30px;'><b><semantic-link iri="{{nobel.value}}"></semantic-link></b><br>
-                <b><i>"{{motivation.value}}"</i></b></h4>
+                <h4 style='line-height: 30px;'><b><semantic-link iri="{{nobel.value}}"></semantic-link></b></h4>
+                <p style='font-size: 16px;'><b>{{motivation.value}}</b></p>
               </div>
             </div>
             {{/each}}
@@ -173,35 +163,19 @@
   
         <semantic-query
           query='
-            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-            PREFIX owl: <http://www.w3.org/2002/07/owl#>
-            PREFIX wiki: <https://wikidata.metaphacts.com/>
-            PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-            PREFIX wd: <http://www.wikidata.org/entity/>
-            PREFIX schema: <http://schema.org/>
-            PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
-            PREFIX dbo: <http://dbpedia.org/ontology/>
-            SELECT DISTINCT ?o ?id WHERE {
+            SELECT DISTINCT ?o (SAMPLE(?ids) as ?id) WHERE {
               BIND(?? as ?s)
               ?s owl:sameAs ?o
               FILTER (!isBlank(?o))
               SERVICE wiki:sparql {
-                ?o wdt:P214 ?id
+                ?o wdt:P214 ?ids
               }
-            }'
+            } GROUP BY ?o'
           template='{{> template}}'>
           <template id='template'>
             {{#each bindings}}
             <semantic-query
               query='
-                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-                PREFIX owl: <http://www.w3.org/2002/07/owl#>
-                PREFIX wiki: <https://wikidata.metaphacts.com/>
-                PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-                PREFIX wd: <http://www.wikidata.org/entity/>
-                PREFIX schema: <http://schema.org/>
-                PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
-                PREFIX dbo: <http://dbpedia.org/ontology/>
                 SELECT DISTINCT ?sourceID WHERE {
                   BIND(IRI(CONCAT("http://viaf.org/viaf/", STR({{id}}))) as ?sourceID)
                   SERVICE <https://dbpedia.org/sparql/> {
@@ -223,9 +197,6 @@
   
         <semantic-query
           query='
-          PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-          PREFIX wiki: <http://www.wikidata.org/entity/>
-          PREFIX schema: <http://schema.org/>
           SELECT DISTINCT ?entity WHERE {
           BIND (?? as ?subject)
           ?subject rdfs:label ?name.
@@ -249,8 +220,6 @@
   
         <semantic-query
           query='
-          PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-          PREFIX wiki: <http://www.wikidata.org/entity/>
           SELECT DISTINCT ?entity WHERE {
             BIND (?? as ?subject)
             ?subject owl:sameAs ?entity
@@ -269,8 +238,6 @@
   
         <semantic-query 
           query='
-          PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-          PREFIX wiki: <http://www.wikidata.org/entity/>
           SELECT DISTINCT ?entity WHERE {
             BIND (?? as ?subject)
             ?subject owl:sameAs ?entity
@@ -292,7 +259,6 @@
         <!--Key facts section: fetching the data of birth and data of death from Nobel prize dataset and providing addtional styling for it (icons, only Eng labels, etc)-->
         <h2 id='facts'>Key facts</h2>
         <semantic-query query='
-          PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
           SELECT DISTINCT ?dob ?birthCityLabel (GROUP_CONCAT(DISTINCT(?birthCountryLabel);SEPARATOR="/") AS ?birthCountryLabels) ?death ?deathCityLabel (GROUP_CONCAT(DISTINCT(?deathCountryLabel);SEPARATOR="/") AS ?deathCountryLabels) WHERE {
             BIND (?? as ?subject)
             ?subject <http://dbpedia.org/property/dateOfBirth> ?dob.
@@ -319,13 +285,12 @@
           template='{{>tpl }}'>
           <template id='tpl'>
             {{#each bindings}}
-            {{#if dob}}<p><i class="fa fa-birthday-cake">&nbsp;&nbsp;&nbsp;&nbsp</i>Born on {{dob.value}} in {{birthCityLabel.value}}, {{birthCountryLabels.value}}</p>{{/if}}
-            {{#if death}}<p><i class="fa fa-calendar">&nbsp;&nbsp;&nbsp;&nbsp</i>Died on {{death.value}} in {{deathCityLabel.value}}, {{deathCountryLabels.value}}</p>{{/if}}
+            {{#if dob}}<p><span class="material-symbols-outlined">cake</span>&nbsp; Born on {{dob.value}} in {{birthCityLabel.value}}, {{birthCountryLabels.value}}</p>{{/if}}
+            {{#if death}}<p><span class="material-symbols-outlined">calendar_month</span>&nbsp; Died on {{death.value}} in {{deathCityLabel.value}}, {{deathCountryLabels.value}}</p>{{/if}}
             {{/each}}
           </template>
         </semantic-query>
         <semantic-query query='
-          PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
           SELECT DISTINCT ?affiliation ?affiliationCountryLabel WHERE {
             BIND (?? as ?subject)	
             OPTIONAL { 
@@ -337,7 +302,7 @@
           }' 
           template='{{>tpl }}'>
           <template id='tpl'>
-            <p><i class="fa fa-university">&nbsp;&nbsp;&nbsp;&nbsp</i>Affiliated with {{#each bindings}} {{#if @first}} {{else}} | {{#if @last}} {{else}} {{/if}} {{/if}} <mp-label iri="{{affiliation.value}}"></mp-label>, {{affiliationCountryLabel.value}} {{/each}}</p>
+            <p><span class="material-symbols-outlined">account_balance</span>&nbsp; Affiliated with {{#each bindings}} {{#if @first}} {{else}} | {{#if @last}} {{else}} {{/if}} {{/if}} <mp-label iri="{{affiliation.value}}"></mp-label>, {{affiliationCountryLabel.value}} {{/each}}</p>
           </template>
         </semantic-query>
         
@@ -345,13 +310,6 @@
         <div style='height: 300px;'>
           <semantic-map 
             query='
-              PREFIX owl: <http://www.w3.org/2002/07/owl#>
-              PREFIX : <http://www.metaphacts.com/resource/>
-              PREFIX wiki: <https://wikidata.metaphacts.com/>
-              PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-              PREFIX wd: <http://www.wikidata.org/entity/>
-              PREFIX schema: <http://schema.org/>
-              PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
               SELECT DISTINCT ?subject ?label ?location ?wkt (GROUP_CONCAT(DISTINCT(?countryLabel);SEPARATOR="/") AS ?countryLabels) WHERE {
               BIND (?? as ?subject)
                 {
@@ -384,38 +342,22 @@
         <!--End of Key facts section-->
   
         <!--Biography section. We are fetching the biography: by the VIAF dataset ID we find the corresponding abstract in Dbpedia dataset and then provide the "Show more", "Show less" buttons -->
-        <div id='biography' style='width: 50%; padding-top: 10px;'>
+        <div id='biography' style='width: 50%; padding-top: 8px;'>
         <semantic-query
           query='
-            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-            PREFIX owl: <http://www.w3.org/2002/07/owl#>
-            PREFIX wiki: <https://wikidata.metaphacts.com/>
-            PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-            PREFIX wd: <http://www.wikidata.org/entity/>
-            PREFIX schema: <http://schema.org/>
-            PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
-            PREFIX dbo: <http://dbpedia.org/ontology/>
-            SELECT DISTINCT ?o ?id WHERE {
+            SELECT DISTINCT ?o (SAMPLE(?ids) as ?id) WHERE {
               BIND(?? as ?s)
               ?s owl:sameAs ?o
               FILTER (!isBlank(?o))
               SERVICE wiki:sparql {
-                ?o wdt:P214 ?id
+                ?o wdt:P214 ?ids
               }
-            }'
+            } GROUP BY ?o'
           template='{{> template}}'>
           <template id='template'>
             {{#each bindings}}
             <semantic-query
               query='
-                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-                PREFIX owl: <http://www.w3.org/2002/07/owl#>
-                PREFIX wiki: <https://wikidata.metaphacts.com/>
-                PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-                PREFIX wd: <http://www.wikidata.org/entity/>
-                PREFIX schema: <http://schema.org/>
-                PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
-                PREFIX dbo: <http://dbpedia.org/ontology/>
                 SELECT DISTINCT ?sourceID WHERE {
                   BIND(IRI(CONCAT("http://viaf.org/viaf/", STR({{id}}))) as ?sourceID)
                   SERVICE <https://dbpedia.org/sparql/> {
@@ -434,35 +376,19 @@
         </semantic-query>
           <semantic-query
             query='
-              PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-              PREFIX owl: <http://www.w3.org/2002/07/owl#>
-              PREFIX wiki: <https://wikidata.metaphacts.com/>
-              PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-              PREFIX wd: <http://www.wikidata.org/entity/>
-              PREFIX schema: <http://schema.org/>
-              PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
-              PREFIX dbo: <http://dbpedia.org/ontology/>
-              SELECT DISTINCT ?o ?id WHERE {
+              SELECT DISTINCT ?o (SAMPLE(?ids) as ?id) WHERE {
                 BIND(?? as ?s)
                 ?s owl:sameAs ?o
                 FILTER (!isBlank(?o))
                 SERVICE wiki:sparql {
-                  ?o wdt:P214 ?id
+                  ?o wdt:P214 ?ids
                 }
-              }'
+              } GROUP BY ?o'
             template='{{> template}}'>
             <template id='template'>
               {{#each bindings}}
               <semantic-query
                 query='
-                  PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-                  PREFIX owl: <http://www.w3.org/2002/07/owl#>
-                  PREFIX wiki: <https://wikidata.metaphacts.com/>
-                  PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-                  PREFIX wd: <http://www.wikidata.org/entity/>
-                  PREFIX schema: <http://schema.org/>
-                  PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
-                  PREFIX dbo: <http://dbpedia.org/ontology/>
                   SELECT DISTINCT ?comment WHERE {
                     BIND(IRI(CONCAT("http://viaf.org/viaf/", STR({{id}}))) as ?sourceID)
                     SERVICE <https://dbpedia.org/sparql/> {
@@ -490,10 +416,9 @@
   
         <!--Lifetime section: we employ here the timeline component on which we map the data of birth, data of death and the year of the Nobel Prize award-->
         <h2 id='timeline'>Lifetime</h2>
-          <div style='padding-top: 15px;'>
+          <div style='padding-top: 16px;'>
             <semantic-timeline id='timeline' no-result-template='No information available'
               query='
-                PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
                 SELECT DISTINCT ?start ?label WHERE {
                 {
                   ?? <http://dbpedia.org/property/dateOfBirth> ?start.
@@ -522,9 +447,6 @@
           <!--Notable work section: we fetch the list of notable works from wikidata and they style the images and labels in the grip component-->
           <semantic-query
             query='
-            PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-            PREFIX wiki: <http://www.wikidata.org/entity/>
-            PREFIX schema: <http://schema.org/>
             SELECT DISTINCT ?entity WHERE {
               BIND (?? as ?subject)
               ?subject owl:sameAs ?entity.
@@ -541,9 +463,6 @@
           </template>
           </semantic-query>
           <semantic-query query='
-            PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-            PREFIX wiki: <http://www.wikidata.org/entity/>
-            PREFIX schema: <http://schema.org/>
             SELECT DISTINCT ?notablework (REPLACE(SAMPLE(STR(?images)), "http", "https", "i") AS ?image) WHERE {
               BIND (?? as ?subject)
               ?subject owl:sameAs ?entity.
@@ -559,7 +478,7 @@
               <div style="margin: 10px; width: 280px;">
                 <div class="custom-card-group">
                   <div class="card" style='border: none;'>
-                    <img src='{{image.value}}' style="height: 100px; width: auto;  object-fit: cover; border-bottom: 1px solid #e1e7f0;">
+                    <img src='{{image.value}}' style="height: 100px; width: auto;  object-fit: cover; border-bottom: 1px solid var(--mp-color-primary-100);">
                     <div class="custom-card-content">
                       <semantic-context repository='wikidata'>
                         <h5><mp-label iri='{{notablework.value}}'></mp-label></h5>
@@ -581,8 +500,6 @@
           <!--Other awards section: we fetch other awards from wikidata and then layout them in a list-->
           <semantic-query
             query='
-            PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-            PREFIX wiki: <http://www.wikidata.org/entity/>
             SELECT DISTINCT ?entity WHERE {
               BIND (?? as ?subject)
               ?subject owl:sameAs ?entity
@@ -600,9 +517,6 @@
           </semantic-query>
         <div class='additional-information' >
           <semantic-query query='
-            PREFIX owl: <http://www.w3.org/2002/07/owl#>
-            PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-            PREFIX wd: <http://www.wikidata.org/entity/>
             SELECT DISTINCT ?award WHERE {
               BIND (?? as ?subject)
               ?subject owl:sameAs ?entity.
@@ -629,8 +543,6 @@
         <!--Member of section: we get the data from wikidata and apply some styling to it-->
         <semantic-query 
           query='
-          PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-          PREFIX wiki: <http://www.wikidata.org/entity/>
           SELECT DISTINCT ?entity WHERE {
             BIND (?? as ?subject)
             ?subject owl:sameAs ?entity
@@ -645,8 +557,6 @@
         </semantic-query>
         <div class='additional-information' >
           <semantic-query query='
-            PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-            PREFIX wiki: <http://www.wikidata.org/entity/>
             SELECT DISTINCT ?member WHERE {
             BIND (?? as ?subject)
             ?subject owl:sameAs ?entity.

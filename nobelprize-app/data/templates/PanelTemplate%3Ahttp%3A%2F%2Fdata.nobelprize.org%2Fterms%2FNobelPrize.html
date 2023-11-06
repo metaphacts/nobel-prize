@@ -1,4 +1,4 @@
-[[> Platform:KnowledgePanelStyles]]
+{{> Platform:KnowledgePanelStyles}}
 
 <div class='knowledge-panel'>
   <div class='knowledge-panel__header'>
@@ -9,9 +9,8 @@
           <br>
           <semantic-query 
             query='
-            PREFIX wiki: <https://wikidata.metaphacts.com/>
             SELECT DISTINCT ?desc  WHERE {
-              <[[this]]> owl:sameAs ?entity.
+              <{{page-resource}}> owl:sameAs ?entity.
               FILTER (!isBlank(?entity))
               SERVICE wiki:sparql {
                 ?entity <http://schema.org/description> ?desc.
@@ -21,7 +20,7 @@
             template='{{> template}}'>
             <template id='template'>
               {{#each bindings}}
-              <p style="color: #545454; font-size: x-small;">{{desc.value}}</p>
+              <p style="font-size: x-small;">{{desc.value}}</p>
               {{/each}}
             </template>
           </semantic-query>
@@ -34,7 +33,7 @@
   </div>
   <div class='knowledge-panel__content'>
     <div class='knowledge-panel__link'>
-      <semantic-link iri='[[this]]'>
+      <semantic-link iri='{{page-resource}}'>
         <i class='fa fa-link'></i><span class='knowledge-panel__link-text'>Navigate to resource</span>
       </semantic-link>
     </div>
@@ -54,7 +53,7 @@
         <b>Type</b>:
         {{#each bindings}}
           {{#if (isIri type)}}
-            <semantic-link uri='{{type.value}}'></semantic-link>
+            <mp-label iri='{{type.value}}'></mp-label>
           {{else}}
             {{type.value}}
           {{/if}}
@@ -67,12 +66,11 @@
         {{/Assets:DatasetsHelpers::datasets-list-for-iri}}
     </div>
   </div>
-  <div style='padding: 10px;' >
+  <div style='padding: 8px;' >
     <semantic-query
       query='
-        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
         SELECT DISTINCT (GROUP_CONCAT(DISTINCT STR(?name) ; separator=", ") as ?laureates) ?category ?year (GROUP_CONCAT(DISTINCT STR(?motivation) ; separator=" & ") as ?motivations) WHERE {
-            <[[this]]> <http://data.nobelprize.org/terms/category> ?category;
+            <{{page-resource}}> <http://data.nobelprize.org/terms/category> ?category;
               <http://data.nobelprize.org/terms/year> ?year;
               ^<http://data.nobelprize.org/terms/nobelPrize> ?laureate;
               <http://purl.org/dc/terms/hasPart> ?LaureateAward.
@@ -91,10 +89,8 @@
     <div class="row row-cols-md-8">
       <semantic-query
         query='
-          PREFIX owl: <http://www.w3.org/2002/07/owl#>
-          PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
           SELECT DISTINCT ?laureate ?share (1/?share*100 as ?percent) WHERE {
-            BIND(<[[this]]> as ?s)
+            BIND(<{{page-resource}}> as ?s)
             ?s <http://purl.org/dc/terms/hasPart> ?LaureateAward.
             ?LaureateAward <http://data.nobelprize.org/terms/laureate> ?laureate;
                           <http://data.nobelprize.org/terms/share> ?share.
@@ -106,9 +102,6 @@
             <bs-card-body>
               <semantic-query 
                 query='
-                  PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-                  PREFIX wd: <http://www.wikidata.org/entity/>
-                  PREFIX wiki: <https://wikidata.metaphacts.com/>
                   SELECT DISTINCT (REPLACE(STR(SAMPLE(?images)), "http", "https", "i") AS ?image) WHERE {
                     {{laureate}} owl:sameAs ?entity.
                     FILTER (!isBlank(?entity))
@@ -119,7 +112,7 @@
                 template='{{> template}}'>
               <template id='template'>
                 {{#each bindings}}
-                <div style='padding-right: 15px;'>
+                <div style='padding-right: 16px;'>
                   <img src='{{image.value}}' style="height: 50px; width: 45px; object-fit: cover;">
                 </div>
                 {{/each}}
@@ -127,11 +120,10 @@
               </semantic-query>
               <div> 
                 <bs-card-title class="text-break title-kp mb-1">
-                  <h5><mp-label iri="{{laureate.value}}"></mp-label></h5>
+                  <h2 class='h5' style='color: #bb8a35;'><semantic-link iri="{{laureate.value}}"></semantic-link></h2>
                 </bs-card-title>
                 <semantic-query 
                   query='
-                  PREFIX wiki: <https://wikidata.metaphacts.com/>
                   SELECT DISTINCT ?desc  WHERE {
                     {{laureate}} owl:sameAs ?entity.
                     FILTER (!isBlank(?entity))
@@ -143,7 +135,7 @@
                   template='{{> template}}'>
                 <template id='template'>
                   {{#each bindings}}
-                  <p style="color: #545454; font-size: smaller;">{{desc.value}}</p>
+                  <p style="font-size: smaller;">{{desc.value}}</p>
                   {{/each}}
                 </template>
                 </semantic-query>

@@ -1,15 +1,11 @@
-[[> Platform:KnowledgePanelStyles]]
+{{> Platform:KnowledgePanelStyles}}
 
 <div class='knowledge-panel'>
   <div class='knowledge-panel__header'>
     <div class='knowledge-panel__thumbnail'>
       <semantic-query query='
-        PREFIX owl: <http://www.w3.org/2002/07/owl#>
-        PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-        PREFIX wd: <http://www.wikidata.org/entity/>
-        PREFIX wiki: <https://wikidata.metaphacts.com/>
         SELECT (REPLACE(SAMPLE(STR(?images)), "http", "https", "i") AS ?image) WHERE {
-          BIND (<[[this]]> as ?subject)
+          BIND (<{{page-resource}}> as ?subject)
           ?subject owl:sameAs ?entity.
           FILTER (!isBlank(?entity))
           SERVICE wiki:sparql {
@@ -19,7 +15,7 @@
         <template id='tpl'>
           {{#each bindings}}
           <div>
-            <img src='{{image.value}}'>
+            <img src='{{image.value}}' alt=''>
           </div>
           {{/each}}
         </template>
@@ -32,9 +28,8 @@
           <br>
           <semantic-query 
             query='
-            PREFIX wiki: <https://wikidata.metaphacts.com/>
             SELECT DISTINCT ?desc  WHERE {
-              <[[this]]> owl:sameAs ?entity.
+              <{{page-resource}}> owl:sameAs ?entity.
               FILTER (!isBlank(?entity))
               SERVICE wiki:sparql {
                 ?entity <http://schema.org/description> ?desc.
@@ -57,7 +52,7 @@
   </div>
   <div class='knowledge-panel__content'>
     <div class='knowledge-panel__link'>
-      <semantic-link iri='[[this]]'>
+      <semantic-link iri='{{page-resource}}'>
         <i class='fa fa-link'></i><span class='knowledge-panel__link-text'>Navigate to resource</span>
       </semantic-link>
     </div>
@@ -93,16 +88,8 @@
   <div style='padding: 10px;' >
     <semantic-query
       query='
-        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-        PREFIX owl: <http://www.w3.org/2002/07/owl#>
-        PREFIX wiki: <https://wikidata.metaphacts.com/>
-        PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-        PREFIX wd: <http://www.wikidata.org/entity/>
-        PREFIX schema: <http://schema.org/>
-        PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
-        PREFIX dbo: <http://dbpedia.org/ontology/>
         SELECT DISTINCT ?o (SAMPLE(?ID) as ?id) WHERE {
-          BIND(<[[this]]> as ?s)
+          BIND(<{{page-resource}}> as ?s)
           ?s owl:sameAs ?o
           FILTER (!isBlank(?o))
           SERVICE wiki:sparql {
@@ -114,14 +101,6 @@
         {{#each bindings}}
         <semantic-query
           query='
-            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-            PREFIX owl: <http://www.w3.org/2002/07/owl#>
-            PREFIX wiki: <https://wikidata.metaphacts.com/>
-            PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-            PREFIX wd: <http://www.wikidata.org/entity/>
-            PREFIX schema: <http://schema.org/>
-            PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
-            PREFIX dbo: <http://dbpedia.org/ontology/>
             SELECT DISTINCT (SAMPLE(?comm) as ?comment) WHERE {
               BIND(IRI(CONCAT("http://viaf.org/viaf/", STR({{id}}))) as ?sourceID)
               SERVICE <https://dbpedia.org/sparql/> {
@@ -146,9 +125,8 @@
     </semantic-query>
     <br>
     <semantic-query query='
-      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
       SELECT DISTINCT ?dob ?birthCityLabel (GROUP_CONCAT(DISTINCT(?birthCountryLabel);SEPARATOR="/") AS ?birthCountryLabels) ?death ?deathCityLabel (GROUP_CONCAT(DISTINCT(?deathCountryLabel);SEPARATOR="/") AS ?deathCountryLabels)  WHERE {
-        BIND (<[[this]]> as ?subject)
+        BIND (<{{page-resource}}> as ?subject)
         ?subject <http://dbpedia.org/property/dateOfBirth> ?dob.
         ?subject <http://dbpedia.org/ontology/birthPlace> ?birthCity;
                 <http://dbpedia.org/ontology/birthPlace> ?birthCountry.
@@ -173,15 +151,14 @@
       template='{{>tpl }}'>
       <template id='tpl'>
         {{#each bindings}}
-        {{#if dob}}<p><i class="fa fa-birthday-cake">&nbsp;&nbsp;&nbsp;</i>Born on {{dob.value}} in {{birthCityLabel.value}}, {{birthCountryLabels.value}}</p>{{/if}}
-        {{#if death}}<p><i class="fa fa-calendar">&nbsp;&nbsp;&nbsp;</i>Died on {{death.value}} in {{deathCityLabel.value}}, {{deathCountryLabels.value}}</p>{{/if}}
+        {{#if dob}}<p><span class="material-symbols-outlined">cake</span>&nbsp; Born on {{dob.value}} in {{birthCityLabel.value}}, {{birthCountryLabels.value}}</p>{{/if}}
+        {{#if death}}<p><span class="material-symbols-outlined">calendar_month</span>&nbsp; Died on {{death.value}} in {{deathCityLabel.value}}, {{deathCountryLabels.value}}</p>{{/if}}
         {{/each}}
       </template>
     </semantic-query>
     <semantic-query query='
-      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
       SELECT DISTINCT (GROUP_CONCAT(DISTINCT STR(?name) ; separator=" & ") as ?names) ?affiliationCountryLabel WHERE {
-        BIND (<[[this]]> as ?subject)
+        BIND (<{{page-resource}}> as ?subject)
         ?subject <http://dbpedia.org/ontology/affiliation> ?affiliation.
         ?affiliation rdfs:label ?name.
         ?affiliation <http://dbpedia.org/ontology/country> ?affiliationCountry.
@@ -196,15 +173,8 @@
     </semantic-query>
     <semantic-map 
       query='
-        PREFIX owl: <http://www.w3.org/2002/07/owl#>
-        PREFIX : <http://www.metaphacts.com/resource/>
-        PREFIX wiki: <https://wikidata.metaphacts.com/>
-        PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-        PREFIX wd: <http://www.wikidata.org/entity/>
-        PREFIX schema: <http://schema.org/>
-        PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
         SELECT DISTINCT ?subject ?label ?location ?wkt (GROUP_CONCAT(DISTINCT(?countryLabel);SEPARATOR="/") AS ?countryLabels) WHERE {
-        BIND (<[[this]]> as ?subject)
+        BIND (<{{page-resource}}> as ?subject)
           {
             ?subject <http://dbpedia.org/ontology/birthPlace> ?location;
                       <http://dbpedia.org/ontology/birthPlace> ?country.
