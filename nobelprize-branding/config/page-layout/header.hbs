@@ -29,12 +29,12 @@
   {{/if}}
   <bs-navbar-toggle></bs-navbar-toggle>
   <bs-navbar-collapse>
-    <ul class="nav mr-auto"></ul>
+    <ul class="nav me-auto"></ul>
     <ul class="nav navbar-nav">
       <bs-nav title="Search">
         <bs-nav-item>
           <mp-resource-link-container propagate-link="true" iri="http://www.metaphacts.com/resource/SimpleSearch">
-            <bs-nav-link><i class="fa fa-search"></i></bs-nav-link>
+            <bs-nav-link><span class="material-symbols-outlined">search</span></bs-nav-link>
           </mp-resource-link-container>
         </bs-nav-item>
       </bs-nav>
@@ -44,7 +44,7 @@
         </bs-nav-item>
       </mp-has-permission>
       <bs-nav>
-        <bs-nav-dropdown title="Assets" id="assets-bg-nested-dropdown" data-align-right="true">
+        <bs-nav-dropdown title="Assets" id="assets-bg-nested-dropdown" align="end">
           <mp-resource-link-container propagate-link="true" iri="http://www.metaphacts.com/resource/assets/">
             <bs-menu-item>All Assets</bs-menu-item>
           </mp-resource-link-container>
@@ -64,9 +64,6 @@
           <mp-resource-link-container propagate-link="true" iri="http://www.metaphacts.com/resource/assets/QueryTemplates">
             <bs-menu-item>Query Templates</bs-menu-item>
           </mp-resource-link-container>
-          <mp-resource-link-container propagate-link="true" iri="http://www.metaphacts.com/resource/assets/Fields">
-            <bs-menu-item>Fields</bs-menu-item>
-          </mp-resource-link-container>
           <bs-dropdown-divider></bs-dropdown-divider>
           <mp-resource-link-container propagate-link="true" iri="http://www.metaphacts.com/resource/assets/Diagrams">
             <bs-menu-item>Diagrams</bs-menu-item>
@@ -75,15 +72,15 @@
         <bs-nav title="Data Import & Export">
           <bs-nav-item>
             <mp-resource-link-container propagate-link="true" iri="http://www.metaphacts.com/resource/admin/DataImportExport">
-              <bs-nav-link><i class="fa fa-cloud-upload"></i></bs-nav-link>
+              <bs-nav-link><span class="material-symbols-outlined">cloud_upload</span></bs-nav-link>
             </mp-resource-link-container>
           </bs-nav-item>
         </bs-nav>
-        <mp-has-permission permission="pages:view:*">
+        <mp-has-permission permission="pages:view:<http://www.metaphacts.com/resource/admin/>">
           <bs-nav title="System Administration">
             <bs-nav-item>
               <mp-resource-link-container propagate-link="true" iri="http://www.metaphacts.com/resource/admin/">
-                <bs-nav-link><i class="fa fa-cog"></i></bs-nav-link>
+                <bs-nav-link><span class="material-symbols-outlined">settings</span></bs-nav-link>
               </mp-resource-link-container>
             </bs-nav-item>
           </bs-nav>
@@ -91,7 +88,7 @@
         <bs-nav title="Help">
           <bs-nav-item>
             <mp-resource-link-container propagate-link="true" iri="http://help.metaphacts.com/resource/Documentation">
-              <bs-nav-link><i class="fa fa-question-circle"></i></bs-nav-link>
+              <bs-nav-link><span class="material-symbols-outlined">help</span></bs-nav-link>
             </mp-resource-link-container>
           </bs-nav-item>
         </bs-nav>
