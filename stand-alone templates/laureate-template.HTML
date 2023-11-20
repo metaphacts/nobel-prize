@@ -1,0 +1,554 @@
+<!--This is where we define the CSS styles to be later used in the page content-->
+<style>
+  
+  .custom-card-group {
+    padding: 24px;
+    border: 1px solid var(--mp-color-primary-100);
+  }
+  
+  .custom-card-content {
+    flex: 1 1 auto;
+    overflow: hidden;
+    height: 120px;
+    padding: 16px 8px 8px 0px;
+  }
+  
+  .DataTable--semantic-data-table {
+    position: relative;
+    height: auto;
+  }
+  
+  .custom-page-header {
+    padding: 16px 64px 16px 78px;
+    background-color: var(--mp-color-dark-50);
+    display: flex;
+    align-items: start;
+  }
+  
+  .custom-page-content {
+    display: flex;
+    align-items: start;
+  }
+  
+  .main-content {
+    padding: 8px 96px 8px 24px;
+    width: 100%;
+    border-top: 1px solid var(--mp-color-primary-100);
+  }
+  
+  .navigationSidebar {
+    width: 310px;
+    margin-left: 75px;
+    border: 1px solid var(--mp-color-primary-100);
+    z-index: 100;
+    position: sticky;
+    top: 70px;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    line-height: 2.5em;
+  }
+  
+  .page-nav-header {
+    margin-top: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--mp-color-primary-100);
+  }
+  
+  .page-nav-button {
+    width: 265px;
+    padding: 0;
+    font-size: 12px;
+  }
+  
+  .additional-information {
+    display: grid; 
+    padding-top: 8px; 
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 10px;
+    width: 50%;
+  }
+  
+  ul {
+    list-style: none;
+  }
+  
+  ul li::before {
+    content: "\2022";
+    color: #bb8a35;
+    display: inline-block; 
+    width: 1em;
+    margin-left: -1em;
+  }
+  
+  </style>
+  
+  <div class='page'>
+    <!--Page header content-->
+    <div id='overview' class='custom-page-header'>
+      <!--Fetching the image from wikidata external datasource-->
+      <semantic-query query='
+        PREFIX owl: <http://www.w3.org/2002/07/owl#>
+        PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+        PREFIX wd: <http://www.wikidata.org/entity/>
+        PREFIX wiki: <https://wikidata.metaphacts.com/>
+        SELECT (REPLACE(SAMPLE(STR(?images)), "http", "https", "i") AS ?image) WHERE {
+          BIND (?? as ?subject)
+          ?subject owl:sameAs ?entity.
+          FILTER (!isBlank(?entity))
+          SERVICE wiki:sparql {
+            ?entity wdt:P18 ?images.
+          }
+        }' template='{{>tpl }}'>
+        <template id='tpl'>
+          {{#each bindings}}
+          <div>
+            <img height='365' width='auto' src='{{image.value}}' alt=''>
+          </div>
+          {{/each}}
+        </template>
+      </semantic-query>
+      <div style='padding: 0px 16px 16px 16px;'>
+        <p><span class="material-symbols-outlined" style='font-size: 64px;'>school</span></p>
+        <h1 style='font-size: xx-large;'><mp-label iri='{{page-resource}}'></mp-label></h1>
+        <!--fetching the short description about the laureate from wikidata and filtering out all, but those in English-->
+        <semantic-query
+          query='
+            PREFIX owl: <http://www.w3.org/2002/07/owl#>
+            PREFIX : <http://www.metaphacts.com/resource/>
+            PREFIX wiki: <https://wikidata.metaphacts.com/>
+            PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+            PREFIX wd: <http://www.wikidata.org/entity/>
+            PREFIX schema: <http://schema.org/>
+
+            SELECT DISTINCT (SAMPLE(?desc) as ?description) WHERE {
+              ?? owl:sameAs ?obj.
+              FILTER (!isBlank(?obj))
+              SERVICE wiki:sparql {
+                ?obj schema:description ?desc.
+                FILTER LANGMATCHES( lang(?desc), "en" )  
+              }
+            }' 
+          template='{{> template}}'>
+        <template id='template'>
+          {{#each bindings}}
+          <h4 style='margin-top: -8px; color: #bb8a35;'>{{description.value}}</h4><br>
+          {{/each}}
+        </template>
+        </semantic-query>
+        <!--Fetching the motivation that is provided for each awarded Nobel prize-->
+        <semantic-query query='
+          SELECT DISTINCT ?nobel ?motivation WHERE {
+            BIND (?? as ?subject)
+            ?subject <http://data.nobelprize.org/terms/laureateAward> ?laureateAward.
+            ?laureateAward <http://data.nobelprize.org/terms/motivation> ?motivation.
+            ?laureateAward ^<http://purl.org/dc/terms/hasPart> ?nobel.
+            FILTER(LANG(?motivation)="en")
+          }' template='{{>tpl }}'>
+          <template id='tpl'>
+            {{#each bindings}}
+            <div style='display: flex; flex-direction: row;' >
+              <div style='padding-right: 8px;'>
+                <img height='35' src='/assets/nobel.svg' alt=''>
+              </div>
+              <div>
+                <h4 style='line-height: 30px;'><b><semantic-link iri="{{nobel.value}}"></semantic-link></b></h4>
+                <p style='font-size: 16px;'><b>{{motivation.value}}</b></p>
+              </div>
+            </div>
+            {{/each}}
+          </template>
+        </semantic-query>
+      </div>
+    </div>
+    <!--End of page header-->
+  
+    <!--Page sections left-side navbar-->
+    <div class='custom-page-content'>
+  
+      <div id='page-nav' class='navigationSidebar'>
+  
+        <a href='#overview'><b>Overview</b></a>
+  
+        <a href='#facts'><b>Key facts</b></a>
+  
+        <semantic-query
+          query='
+                      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            PREFIX owl: <http://www.w3.org/2002/07/owl#>
+            PREFIX wiki: <https://wikidata.metaphacts.com/>
+            PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+            PREFIX wd: <http://www.wikidata.org/entity/>
+            PREFIX schema: <http://schema.org/>
+            PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
+            PREFIX dbo: <http://dbpedia.org/ontology/>
+
+            SELECT DISTINCT ?o (SAMPLE(?ids) as ?id) WHERE {
+              BIND(?? as ?s)
+              ?s owl:sameAs ?o
+              FILTER (!isBlank(?o))
+              SERVICE wiki:sparql {
+                ?o wdt:P214 ?ids
+              }
+            } GROUP BY ?o'
+          template='{{> template}}'>
+          <template id='template'>
+            {{#each bindings}}
+            <semantic-query
+              query='
+                          PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            PREFIX owl: <http://www.w3.org/2002/07/owl#>
+            PREFIX wiki: <https://wikidata.metaphacts.com/>
+            PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+            PREFIX wd: <http://www.wikidata.org/entity/>
+            PREFIX schema: <http://schema.org/>
+            PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
+            PREFIX dbo: <http://dbpedia.org/ontology/>
+
+                SELECT DISTINCT ?sourceID WHERE {
+                  BIND(IRI(CONCAT("http://viaf.org/viaf/", STR({{id}}))) as ?sourceID)
+                  SERVICE <https://dbpedia.org/sparql/> {
+                      ?dbpedia owl:sameAs ?sourceID.
+                      ?dbpedia dbo:abstract ?comment.
+                      FILTER(LANG(?comment)="en")
+                  } ephedra:Prior ephedra:executeLast true .
+                }'
+              template='{{> template}}'>
+              <template id='template'>
+                {{#each bindings}}{{#if sourceID}}<a href='#biography'><b>Biography</b></a>{{/if}}{{/each}}
+              </template>
+            </semantic-query>
+            {{/each}}
+          </template>
+        </semantic-query>
+  
+        <a href='#timeline'><b>Life timeline</b></a>
+  
+        <semantic-query
+          query='
+          PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+          PREFIX wiki: <http://www.wikidata.org/entity/>
+          PREFIX schema: <http://schema.org/>
+
+          SELECT DISTINCT ?entity WHERE {
+          BIND (?? as ?subject)
+          ?subject rdfs:label ?name.
+              BIND(STRLANG(STR(?name), "en") as ?label)
+              SERVICE <https://wikidata.metaphacts.com/sparql> {
+              ?entity rdfs:label ?label.
+              ?entity wdt:P31 wiki:Q5;
+              wdt:P800 ?notableworks.
+              ?notableworks wdt:P18 ?images;
+              rdfs:label ?notablework;
+              schema:description ?desc.
+              FILTER(LANG(?notablework) = "en")
+              FILTER(LANG(?desc) = "en")
+            }  
+          } '
+          template='{{> template}}'>
+        <template id='template'>
+          {{#each bindings}}{{#if entity}}<a href='#notable-work'><b>Notable Work</b></a>{{/if}}{{/each}}
+        </template>
+        </semantic-query>
+      </div>
+      <!--End of navbar-->
+  
+      <!--Content for page sections-->
+      <div class='main-content'>
+        <!--Key facts section: fetching the data of birth and data of death from Nobel prize dataset and providing addtional styling for it (icons, only Eng labels, etc)-->
+        <h2 id='facts'>Key facts</h2>
+        <semantic-query query='
+          SELECT DISTINCT ?dob ?birthCityLabel (GROUP_CONCAT(DISTINCT(?birthCountryLabel);SEPARATOR="/") AS ?birthCountryLabels) ?death ?deathCityLabel (GROUP_CONCAT(DISTINCT(?deathCountryLabel);SEPARATOR="/") AS ?deathCountryLabels) WHERE {
+            BIND (?? as ?subject)
+            ?subject <http://dbpedia.org/property/dateOfBirth> ?dob.
+            ?subject <http://dbpedia.org/ontology/birthPlace> ?birthCity;
+                    <http://dbpedia.org/ontology/birthPlace> ?birthCountry.
+            OPTIONAL {
+              ?subject <http://dbpedia.org/property/dateOfDeath> ?death;
+                      <http://dbpedia.org/ontology/deathPlace> ?deathCity;
+                      <http://dbpedia.org/ontology/deathPlace> ?deathCountry.
+              ?deathCity a <http://dbpedia.org/ontology/City>;
+                      rdfs:label ?deathCityLabel.
+              ?deathCountry a <http://dbpedia.org/ontology/Country>;
+                      rdfs:label ?deathCountryLabel.
+              FILTER(lang(?deathCityLabel)="en")
+              FILTER(lang(?deathCountryLabel)="en")
+            }
+            ?birthCity a <http://dbpedia.org/ontology/City>;
+                      rdfs:label ?birthCityLabel.
+            ?birthCountry a <http://dbpedia.org/ontology/Country>;
+                      rdfs:label ?birthCountryLabel.
+            FILTER(lang(?birthCityLabel)="en")
+            FILTER(lang(?birthCountryLabel)="en")
+          } GROUP BY ?dob ?birthCityLabel ?death ?deathCityLabel' 
+          template='{{>tpl }}'>
+          <template id='tpl'>
+            {{#each bindings}}
+            {{#if dob}}<p><span class="material-symbols-outlined">cake</span>&nbsp; Born on {{dob.value}} in {{birthCityLabel.value}}, {{birthCountryLabels.value}}</p>{{/if}}
+            {{#if death}}<p><span class="material-symbols-outlined">calendar_month</span>&nbsp; Died on {{death.value}} in {{deathCityLabel.value}}, {{deathCountryLabels.value}}</p>{{/if}}
+            {{/each}}
+          </template>
+        </semantic-query>
+        <semantic-query query='
+          SELECT DISTINCT ?affiliation ?affiliationCountryLabel WHERE {
+            BIND (?? as ?subject)	
+            OPTIONAL { 
+              ?subject <http://dbpedia.org/ontology/affiliation> ?affiliation.
+              ?affiliation <http://dbpedia.org/ontology/country> ?affiliationCountry.
+              ?affiliationCountry rdfs:label ?affiliationCountryLabel.
+              FILTER(lang(?affiliationCountryLabel)="en")
+            }
+          }' 
+          template='{{>tpl }}'>
+          <template id='tpl'>
+            <p><span class="material-symbols-outlined">account_balance</span>&nbsp; Affiliated with {{#each bindings}} {{#if @first}} {{else}} | {{#if @last}} {{else}} {{/if}} {{/if}} <mp-label iri="{{affiliation.value}}"></mp-label>, {{affiliationCountryLabel.value}} {{/each}}</p>
+          </template>
+        </semantic-query>
+        
+        <!--Embedding a map of all places associated with the laureate: birth place, death place, affiliation place-->
+        <div style='height: 300px;'>
+          <semantic-map 
+            query='
+              PREFIX owl: <http://www.w3.org/2002/07/owl#>
+              PREFIX : <http://www.metaphacts.com/resource/>
+              PREFIX wiki: <https://wikidata.metaphacts.com/>
+              PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+              PREFIX wd: <http://www.wikidata.org/entity/>
+              PREFIX schema: <http://schema.org/>
+              PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
+
+              SELECT DISTINCT ?subject ?label ?location ?wkt (GROUP_CONCAT(DISTINCT(?countryLabel);SEPARATOR="/") AS ?countryLabels) WHERE {
+              BIND (?? as ?subject)
+                {
+                  ?subject <http://dbpedia.org/ontology/birthPlace> ?location;
+                           <http://dbpedia.org/ontology/birthPlace> ?country.
+                  BIND("Birth Place" as ?label)
+                } UNION {
+                  ?subject <http://dbpedia.org/ontology/deathPlace> ?location;
+                           <http://dbpedia.org/ontology/birthPlace> ?country.
+                  BIND("Death Place" as ?label)
+                } UNION {
+                  ?subject  <http://dbpedia.org/ontology/affiliation> ?affiliation.
+                  ?affiliation <http://dbpedia.org/ontology/city> ?location;
+                               <http://dbpedia.org/ontology/country> ?country.
+                  BIND("Affiliation" as ?label)
+                }
+                ?country a <http://dbpedia.org/ontology/Country>;
+                         rdfs:label ?countryLabel.
+                FILTER(lang(?countryLabel)="en")
+                ?location a <http://dbpedia.org/ontology/City>;
+                        owl:sameAs ?entity.
+                FILTER (!isBlank(?entity))
+                SERVICE wiki:sparql {
+                    ?entity wdt:P625 ?wkt.
+                } ephedra:Prior ephedra:executeLast true .
+              } GROUP BY ?subject ?label ?location ?wkt' 
+            fix-zoom-level='4' tuple-template='<b><u>{{label.value}}</u></b><br><mp-label iri="{{location.value}}"></mp-label>, {{countryLabels.value}}<br><br>'>
+          </semantic-map>
+        </div>
+        <!--End of Key facts section-->
+  
+        <!--Biography section. We are fetching the biography: by the VIAF dataset ID we find the corresponding abstract in Dbpedia dataset and then provide the "Show more", "Show less" buttons -->
+        <div id='biography' style='width: 50%; padding-top: 8px;'>
+        <semantic-query
+          query='
+            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            PREFIX owl: <http://www.w3.org/2002/07/owl#>
+            PREFIX wiki: <https://wikidata.metaphacts.com/>
+            PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+            PREFIX wd: <http://www.wikidata.org/entity/>
+            PREFIX schema: <http://schema.org/>
+            PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
+            PREFIX dbo: <http://dbpedia.org/ontology/>
+
+            SELECT DISTINCT ?o (SAMPLE(?ids) as ?id) WHERE {
+              BIND(?? as ?s)
+              ?s owl:sameAs ?o
+              FILTER (!isBlank(?o))
+              SERVICE wiki:sparql {
+                ?o wdt:P214 ?ids
+              }
+            } GROUP BY ?o'
+          template='{{> template}}'>
+          <template id='template'>
+            {{#each bindings}}
+            <semantic-query
+              query='
+                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                PREFIX owl: <http://www.w3.org/2002/07/owl#>
+                PREFIX wiki: <https://wikidata.metaphacts.com/>
+                PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+                PREFIX wd: <http://www.wikidata.org/entity/>
+                PREFIX schema: <http://schema.org/>
+                PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
+                PREFIX dbo: <http://dbpedia.org/ontology/>
+                SELECT DISTINCT ?sourceID WHERE {
+                  BIND(IRI(CONCAT("http://viaf.org/viaf/", STR({{id}}))) as ?sourceID)
+                  SERVICE <https://dbpedia.org/sparql/> {
+                      ?dbpedia owl:sameAs ?sourceID.
+                      ?dbpedia dbo:abstract ?comment.
+                      FILTER(LANG(?comment)="en")
+                  } ephedra:Prior ephedra:executeLast true .
+                }'
+              template='{{> template}}'>
+              <template id='template'>
+                {{#each bindings}}{{#if sourceID}}<h2>Biography</h2>{{/if}}{{/each}}
+              </template>
+            </semantic-query>
+            {{/each}}
+          </template>
+        </semantic-query>
+          <semantic-query
+            query='
+              PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+              PREFIX owl: <http://www.w3.org/2002/07/owl#>
+              PREFIX wiki: <https://wikidata.metaphacts.com/>
+              PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+              PREFIX wd: <http://www.wikidata.org/entity/>
+              PREFIX schema: <http://schema.org/>
+              PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
+              PREFIX dbo: <http://dbpedia.org/ontology/>
+              SELECT DISTINCT ?o (SAMPLE(?ids) as ?id) WHERE {
+                BIND(?? as ?s)
+                ?s owl:sameAs ?o
+                FILTER (!isBlank(?o))
+                SERVICE wiki:sparql {
+                  ?o wdt:P214 ?ids
+                }
+              } GROUP BY ?o'
+            template='{{> template}}'>
+            <template id='template'>
+              {{#each bindings}}
+              <semantic-query
+                query='
+              PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+              PREFIX owl: <http://www.w3.org/2002/07/owl#>
+              PREFIX wiki: <https://wikidata.metaphacts.com/>
+              PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+              PREFIX wd: <http://www.wikidata.org/entity/>
+              PREFIX schema: <http://schema.org/>
+              PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
+              PREFIX dbo: <http://dbpedia.org/ontology/>
+                  SELECT DISTINCT ?comment WHERE {
+                    BIND(IRI(CONCAT("http://viaf.org/viaf/", STR({{id}}))) as ?sourceID)
+                    SERVICE <https://dbpedia.org/sparql/> {
+                        ?dbpedia owl:sameAs ?sourceID.
+                        ?dbpedia dbo:abstract ?comment.
+                        FILTER(LANG(?comment)="en")
+                    } ephedra:Prior ephedra:executeLast true .
+                  }'
+                template='{{> template}}'>
+                <template id='template'>
+                    {{#each bindings}}
+                    <mp-text-truncate lines="5" expand="{{> expand}}" collapse="{{> collapse}}">
+                    <template id="expand"><span style="color: gray;">...<a>read more</a></span></template>
+                    <template id="collapse"><span style="color: gray;">(<a>show less</a>)</span></template>
+                      <p style='text-align: justify;'>{{{comment.value}}}</p>
+                    </mp-text-truncate>
+                    {{/each}}
+                </template>
+              </semantic-query>
+              {{/each}}
+            </template>
+          </semantic-query>
+        </div>
+        <!--End of Biography section-->
+  
+        <!--Lifetime section: we employ here the timeline component on which we map the data of birth, data of death and the year of the Nobel Prize award-->
+        <h2 id='timeline'>Lifetime</h2>
+          <div style='padding-top: 16px;'>
+            <semantic-timeline id='timeline' no-result-template='No information available'
+              query='
+                SELECT DISTINCT ?start ?label WHERE {
+                {
+                  ?? <http://dbpedia.org/property/dateOfBirth> ?start.
+                  FILTER (!isBlank(?start))
+                  BIND("Birth date" as ?label)
+                } UNION {
+                  ?? <http://dbpedia.org/property/dateOfDeath> ?start.
+                  FILTER (!isBlank(?start))
+                  BIND("Death date" as ?label)
+                } UNION {
+                  ?? <http://data.nobelprize.org/terms/nobelPrize>/<http://purl.org/dc/terms/hasPart>/<http://data.nobelprize.org/terms/year> ?start
+                  FILTER (!isBlank(?start))
+                  BIND("Nobel" as ?label)
+                }
+              } '
+              tuple-template="{{> template}}" tuple-template-height='100'>
+              <template id="template">
+                <div>
+                  <div><u><b>{{label.value}}</b></u></div> <div> {{start.value}}</div>
+                </div>
+              </template>
+            </semantic-timeline>
+          </div>
+          <!--End of Lifetime section-->
+  
+          <!--Notable work section: we fetch the list of notable works from wikidata and they style the images and labels in the grip component-->
+          <semantic-query
+            query='
+            PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+            PREFIX wiki: <http://www.wikidata.org/entity/>
+            PREFIX schema: <http://schema.org/>
+            SELECT DISTINCT ?entity WHERE {
+              BIND (?? as ?subject)
+              ?subject owl:sameAs ?entity.
+              FILTER (!isBlank(?entity))
+              SERVICE <https://wikidata.metaphacts.com/sparql> {
+              ?entity wdt:P800 ?notablework.
+              } 
+            }'
+            template='{{> template}}'>
+          <template id='template'>
+            {{#each bindings}}
+            {{#if entity}}<h2 id='notable-work'>Notable Work</h2>{{/if}}
+            {{/each}}
+          </template>
+          </semantic-query>
+          <semantic-query query='
+            PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+            PREFIX wiki: <http://www.wikidata.org/entity/>
+            PREFIX schema: <http://schema.org/>
+            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            SELECT DISTINCT ?notablework ?label ?desc (REPLACE(SAMPLE(STR(?images)), "http", "https", "i") AS ?image) WHERE {
+              BIND (?? as ?subject)
+              ?subject owl:sameAs ?entity.
+                FILTER (!isBlank(?entity))
+                SERVICE <https://wikidata.metaphacts.com/sparql> {
+                ?entity wdt:P800 ?notablework.
+                ?notablework wdt:P18 ?images.
+                ?notablework rdfs:label ?label.
+                FILTER(lang(?label)="en")
+                OPTIONAL { ?notablework schema:description ?desc }
+                FILTER(lang(?desc)="en")
+              } 
+            } GROUP BY ?notablework ?label ?desc ' template='{{> template }}'>
+            <template id='template'>
+              <div class="row row-cols-md-8">
+              {{#each bindings}}
+              <div style="margin: 10px; width: 280px;">
+                <div class="custom-card-group">
+                  <div class="card" style='border: none;'>
+                    <img src='{{image.value}}' style="height: 100px; width: auto;  object-fit: cover; border-bottom: 1px solid var(--mp-color-primary-100);">
+                    <div class="custom-card-content">
+ 
+                        <h5>{{label.value}}</h5>
+                        <p>{{desc.value}}</p>
+
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {{/each}}
+              </div>
+            </template>
+          </semantic-query>  
+          <!--End of Notable work section-->
+        </div>
+      </div>
+  
+    </div>
+  
+  </div>
+  
+  
