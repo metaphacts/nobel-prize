@@ -1,85 +1,4 @@
 
-<style>
-
-.custom-card {
-  margin: 5px;
-  width: 100% !important;
-}
-
-.card-body {
-  display: flex;
-  align-items: start;
-}
-
-.DataTable--semantic-data-table {
-  position: relative;
-  height: auto;
-}
-
-.knowledge-panel-trigger:hover .knowledge-panel-trigger-button {
-  opacity: 1;
-  visibility: visible;
-}
-
-.knowledge-panel-trigger-button {
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s;
-}
-
-.KeywordTypeQuery--component  {
-  position: sticky;
-  top: 70px;
-  z-index: 5;
-  background: white;
-}
-
-.nobelSearch .KeywordTypeQuery--domainCardItem {
-  flex: 1;
-}
-
-.KeywordTypeQuery--domainThumbnail img {
-  max-height: 100%;
-  max-width: 100%;
-  height: 40px;
-  width: 40px;
-}
-
-.SemanticSearchFacet--holderLeft {
-  display: flex;
-  margin-top: 10px;
-}
-
-</style>
-
-<template-fragment id='knowledgePanelFrame'>
-  <mp-knowledge-panel-frame id='{{id}}' template='{{> template}}'>
-    <template id='template'>
-      {{#if iri}}
-      <style>
-        *[data-knowledge-panel-iri-example3="{{iri}}"] {
-          border: 1px solid lightblue;
-          box-shadow: 0 0 15px lightblue;
-        }
-      </style>
-      <div
-          class='knowledge-panel-frame'
-          data-flex-self='size-1of3'
-      >
-        <div class='knowledge-panel-frame__buttons'>
-          <mp-event-trigger type='KnowledgePanel.Close' targets='["{{id}}"]'>
-            <button class='knowledge-panel-frame__button'>
-              <i class='fa fa-times'></i>
-            </button>
-          </mp-event-trigger>
-        </div>
-        <mp-knowledge-panel iri='{{iri}}'></mp-knowledge-panel>
-      </div>
-      {{/if}}
-    </template>
-  </mp-knowledge-panel-frame>
-</template-fragment>
-
 <div class='page__body'>
   <div style='padding-bottom: 32px'>
     <div class="text-center">
@@ -91,12 +10,25 @@
     <img src='/assets/nobel-logo.svg'>
   </div>
   <div class='nobelSearch' style="padding-top: 32px;">  
-    <semantic-search id="search" 
-      relations='{
-        "<http://data.nobelprize.org/terms/laureate-category>": [{
+    {{> Platform:SearchResultsFragments::defaultStyle}}
+    <semantic-search id="universal-search" 
+    relations='{
+      "<http://data.nobelprize.org/terms/laureate-category>": [{
         "kind": "resource",
         "queryPattern": "
           $subject <http://data.nobelprize.org/terms/nobelPrize>/<http://data.nobelprize.org/terms/category> ?__value__ .
+        "
+      }],
+      "<http://metaphacts.com/relation/laureate-country>": [{
+        "kind": "resource",
+        "queryPattern": "
+          $subject <http://dbpedia.org/ontology/birthPlace> ?__value__. ?__value__ a <http://dbpedia.org/ontology/Country>.
+        "
+      }],
+      "<http://metaphacts.com/relation/nobel-country>": [{
+        "kind": "resource",
+        "queryPattern": "
+          $subject <http://purl.org/dc/terms/hasPart>/<http://data.nobelprize.org/terms/laureate>/<http://dbpedia.org/ontology/birthPlace> ?__value__. ?__value__ a <http://dbpedia.org/ontology/Country>. 
         "
       }],
       "<http://www.metaphacts.com/ontology/sample/life_span>": [{
@@ -124,7 +56,7 @@
         },
         {
           "iri": "<http://data.nobelprize.org/terms/Category>",
-          "label": "Category",
+          "label": "category",
           "includeAsDomain": false
         },
         {
@@ -156,6 +88,18 @@
           "hasRange": "<http://data.nobelprize.org/terms/Category>"
         },
         {
+          "iri": "<http://data.nobelprize.org/terms/year>",
+          "label": "year",
+          "hasDomain": "<http://data.nobelprize.org/terms/NobelPrize>",
+          "hasRange": "<http://www.w3.org/2001/XMLSchema#integer>"
+        },
+        {
+          "iri": "<http://metaphacts.com/relation/nobel-country>",
+          "label": "country",
+          "hasDomain": "<http://data.nobelprize.org/terms/NobelPrize>",
+          "hasRange": "<http://dbpedia.org/ontology/Country>"
+        },
+        {
           "iri": "<http://data.nobelprize.org/terms/laureate-category>",
           "label": "category",
           "hasDomain": "<http://data.nobelprize.org/terms/Laureate>",
@@ -174,8 +118,8 @@
           "hasRange": "<http://www.w3.org/2001/XMLSchema#date>"
         },
         {
-          "iri": "<http://dbpedia.org/ontology/birthPlace>",
-          "label": "birth place",
+          "iri": "<http://metaphacts.com/relation/laureate-country>",
+          "label": "country",
           "hasDomain": "<http://data.nobelprize.org/terms/Laureate>",
           "hasRange": "<http://dbpedia.org/ontology/Country>"
         },
@@ -184,231 +128,188 @@
           "label": "gender",
           "hasDomain": "<http://data.nobelprize.org/terms/Laureate>",
           "hasRange": "<http://www.w3.org/2001/XMLSchema#string>"
+        },
+        {
+          "iri": "<http://data.nobelprize.org/terms/nobelPrize>",
+          "label": "nobel prize",
+          "hasDomain": "<http://data.nobelprize.org/terms/Laureate>",
+          "hasRange": "<http://data.nobelprize.org/terms/NobelPrize>",
+          "inverse": {
+            "iri": "<http://data.nobelprize.org/terms/nobelPrize-inverse>",
+            "label": "laureate"
+          }
+        }
+      ]
+    }'
+     categories='{
+      "<http://data.nobelprize.org/terms/Category>": [
+        {
+          "queryPattern": "$subject ?__relation__ ?__value__",
+          "kind": "hierarchy",
+          "treePatterns": {
+            "kind": "simple",
+            "scheme": "http://data.nobelprize.org/terms-ext/vocabulary"
+          }
         }
       ]
     }'>
-
-      <semantic-search-query-keyword-type 
-        id='keyword-search'
-        inline-suggest=true
-        suggestion-limit='25'
-        min-search-term-length='2'
-        suggestion-template='{{> suggestion}}'>
-      <template id='suggestion'>
-        {{#switch kind}}
-          {{#case 'search' break=true}}
-            <div class='InlineDisambiguation--search'>
-              Search for "<span class='InlineDisambiguation--searchTerm'>{{searchTerm}}</span>"
+      <div class="search">
+        <semantic-search-query-universal id="universal-search" 
+        query='
+          PREFIX Service: <http://www.metaphacts.com/ontologies/platform/service/>
+          PREFIX keywordsearch: <http://www.metaphacts.com/ontologies/platform/service/keywordsearch/>
+          SELECT ?subject WHERE {
+            ?subject a ?__domain__
+            FILTER(?__keywordPattern__)
+            FILTER(?__expressionPattern__)
+          }'
+        count-query="
+          PREFIX Service: <http://www.metaphacts.com/ontologies/platform/service/>
+          PREFIX keywordsearch: <http://www.metaphacts.com/ontologies/platform/service/keywordsearch/>
+          SELECT (COUNT(*) as ?count) WHERE {
+            FILTER(?__keywordPattern__)
+          }">
+        </semantic-search-query-universal>
+        <semantic-search-facet-store id="facet"></semantic-search-facet-store>
+        <semantic-search-result-group template="{{> searchResultGroupTemplate}}">
+          <template id="searchResultGroupTemplate">
+            <div class="searchTopMenu">
+              {{> Platform:SearchResultsFragments::startButton}}
+              {{> Platform:SearchResultsFragments::clearDomain}}
             </div>
-          {{/case}}
-          {{#case 'group' break=true}}
-            <div class='InlineDisambiguation--group' title='{{domain.iri}}'>
-              {{domain.label}}
-            </div>
-          {{/case}}
-          {{#case 'resource' break=true}}
-            <div class='InlineDisambiguation--resource' title='{{resource.iri}}'>
-              <mp-highlight highlight='{{searchTerm}}'>{{resource.label}}</mp-highlight> [{{domain.label}}] 
-              <semantic-query
-                query='
-                  SELECT DISTINCT (SAMPLE(?desc) as ?description) WHERE {
-                    <{{resource.iri}}> owl:sameAs ?obj.
-                    FILTER (!isBlank(?obj))
-                    SERVICE wiki:sparql {
-                      ?obj schema:description ?desc.
-                      FILTER LANGMATCHES( lang(?desc), "en" )  
-                    }
-                  }' 
-                template='{{> template}}'>
-              <template id='template'>
-                {{#each bindings}}
-                <p style='color: #9e9e9e'>{{description.value}}</p>
-                {{/each}}
-              </template>
-              </semantic-query>
-            </div>
-          {{/case}}
-        {{/switch}}
-      </template>
-      </semantic-search-query-keyword-type>
-
-      <div style="display: flex;">
-        <semantic-search-facet-store id="facets"></semantic-search-facet-store>
-        <semantic-search-facet-holder style="flex: 0.33;" collapsible="left">
-            <semantic-search-facet-group></semantic-search-facet-group>
-        </semantic-search-facet-holder>
-
-        <semantic-search-result-holder>
-          <div style="flex: 1;">
-            <!-- Result counts -->
-            <semantic-search-result>
-              <mp-sparql-result-counts id="result-counts" query="SELECT DISTINCT * {}" template="{{> searchResultTemplate}}">
-                <template id="searchResultTemplate">
-                  {{#if hasLimit}}
-                    <bs-alert variant="warning">
-                      Showing <span class="num-results">{{numberOfResults}}</span>
-                      of {{totalNumberOfResults}} matches. <strong>Please, refine your search.</strong>
-                    </bs-alert>
-                  {{else}}
-                    <span>found <span class="num-results">{{numberOfResults}}</span> matches</span>
-                  {{/if}}
-                </template>
-              </mp-sparql-result-counts>
-            </semantic-search-result>
-            <!-- Table -->
-            <semantic-search-result-holder domains-include='["http://data.nobelprize.org/terms/Laureate"]'>
-              <semantic-search-result>
-                <div data-flex-layout="row stretch-stretch">
-                  <div data-flex-layout="md-full" data-flex-self="size-x9">
-                    <div class="row row-cols-md-8">
-                      <semantic-table id='result'
-                        query='SELECT ?subject WHERE {}'
-                        options='{"showFilter": false, "pageSizeSelection": true}'
-                        number-of-displayed-rows='5' 
-                        tuple-template='{{> template}}'>
-                      <template id='template'>
-                        <bs-card class='custom-card'>
-                          <bs-card-body>
-                            <semantic-query 
-                              query='
-                                SELECT DISTINCT (REPLACE(STR(SAMPLE(?images)), "http", "https", "i") AS ?image) WHERE {
-                                  <{{subject.value}}> owl:sameAs ?entity.
-                                  FILTER (!isBlank(?entity))
-                                  SERVICE wiki:sparql {
-                                    ?entity wdt:P18 ?images.
-                                  } 
-                                }'
-                              template='{{> template}}'>
-                            <template id='template'>
-                              {{#each bindings}}
-                              <div style='padding-right: 16px;'>
-                                <img src='{{image.value}}' style="height: 200px; width: 150px; object-fit: cover;">
-                              </div>
-                              {{/each}}
-                            </template>
-                            </semantic-query>
-                            <div style='width: 50%;'>
-                              <bs-card-title class="text-break title-kp mb-1">
-                                <p><span class="material-symbols-outlined" style='font-size: 36px; '> school </span></p>
-                                <semantic-link iri="{{subject.value}}"></semantic-link>
-                                <div style='position: absolute; top: 8px; right: 8px;'>
-                                  <mp-knowledge-panel-trigger iri='{{subject.value}}' target='knowledge-panel'>
-                                    <button class='btn btn-link btn-sm'>
-                                      <span class='material-symbols-outlined'>info</span>
-                                    </button>
-                                  </mp-knowledge-panel-trigger>
-                                </div>
-                              </bs-card-title>
-                              <semantic-query 
-                                query='
-                                SELECT DISTINCT ?desc  WHERE {
-                                  <{{subject.value}}> owl:sameAs ?entity.
-                                  FILTER (!isBlank(?entity))
-                                  SERVICE wiki:sparql {
-                                    ?entity <http://schema.org/description> ?desc.
-                                    FILTER(LANG(?desc)="en")
-                                  }    
-                                } '
-                                template='{{> template}}'>
-                                <template id='template'>
-                                  {{#each bindings}}
-                                  <p style="color: #545454; font-size: smaller;">{{desc.value}}</p>
-                                  {{/each}}
-                                </template>
-                              </semantic-query>
-                              <semantic-query query='
-                                SELECT DISTINCT ?nobel ?motivation WHERE {
-                                  <{{subject.value}}> <http://data.nobelprize.org/terms/laureateAward> ?laureateAward.
-                                  ?laureateAward <http://data.nobelprize.org/terms/motivation> ?motivation.
-                                  ?laureateAward ^<http://purl.org/dc/terms/hasPart> ?nobel.
-                                  FILTER(LANG(?motivation)="en")
-                                }' template='{{>tpl }}'>
-                                <template id='tpl'>
-                                  {{#each bindings}}
-                                  <div style='display: flex; flex-direction: row;' >
-                                    <div style='padding-right: 8px; margin-top: 5px;'>
-                                      <img height='20px' src='/assets/nobel.svg'>
-                                    </div>
-                                    <div>
-                                      <p style='line-height: 30px;'><b><semantic-link iri="{{nobel.value}}"></semantic-link></b><br>
-                                      <b>{{motivation.value}}</b></p>
-                                    </div>
-                                  </div>
-                                  {{/each}}
-                                </template>
-                              </semantic-query>
-                            </div>
-                            <div>
-                            </div>
-                          </bs-card-body>
-                        </bs-card>
-                      </template>
-                      </semantic-table>
-                    </div>
-                  </div>
-                  {{> ::knowledgePanelFrame id='knowledge-panel'}}
-                </div>
-              </semantic-search-result>
-            </semantic-search-result-holder>
-            <semantic-search-result-holder domains-include='["http://data.nobelprize.org/terms/NobelPrize"]'>
-              <semantic-search-result>
-                <div data-flex-layout="row stretch-stretch">
-                  <div data-flex-layout="md-full" data-flex-self="size-x9">
-                    <div class="row row-cols-md-8">
-                      <semantic-table id='result'
-                        query='SELECT ?subject WHERE {}'
-                        options='{"showFilter": false, "pageSizeSelection": true}' 
-                        tuple-template='{{> template}}'>
-                      <template id='template'>
-                        <bs-card class='custom-card'>
-                          <bs-card-body>
-                            <bs-card-title class="text-break title-kp mb-1">
-                              <div>
-                                <img height='35px' src='/assets/nobel.svg'>
-                              </div>
-                            </bs-card-title>
-                            <div style='padding-left: 8px; width: 50%;'>
-                                <b><semantic-link iri="{{subject.value}}"></semantic-link></b>
-                                <div style='position: absolute; top: 8px; right: 8px;'>
-                                  <mp-knowledge-panel-trigger iri='{{subject.value}}' target='knowledge-panel'>
-                                    <button class='btn btn-link btn-sm' >
-                                      <span class='material-symbols-outlined'>info</span>
-                                    </button>
-                                  </mp-knowledge-panel-trigger>
-                                </div>
-                                <semantic-query
-                                  query='
-                                    SELECT DISTINCT (GROUP_CONCAT(DISTINCT STR(?name) ; separator=", ") as ?laureates) ?category ?year (GROUP_CONCAT(DISTINCT STR(?motivation) ; separator=" & ") as ?motivations) WHERE {
-                                        <{{subject.value}}> <http://data.nobelprize.org/terms/category> ?category;
-                                          <http://data.nobelprize.org/terms/year> ?year;
-                                          ^<http://data.nobelprize.org/terms/nobelPrize> ?laureate;
-                                          <http://purl.org/dc/terms/hasPart> ?LaureateAward.
-                                      ?LaureateAward <http://data.nobelprize.org/terms/laureate> ?Laureate;
-                                                    <http://data.nobelprize.org/terms/motivation> ?motivation.
-                                      ?laureate rdfs:label ?name.
-                                      FILTER(LANG(?motivation)="en")
-                                    } GROUP BY ?category ?year' 
-                                template='{{> template}}'>
-                                <template id='template'>
-                                  {{#each bindings}}
-                                  <p style='font-size: smaller; padding-top: 8px;'>The Nobel Prize in <mp-label iri="{{category.value}}"></mp-label> {{year.value}} was awarded to {{laureates.value}} "{{motivations.value}}"</p>
-                                  {{/each}}
-                                </template>
-                                </semantic-query>
-                            </div>
-                          </bs-card-body>
-                        </bs-card>
-                      </template>
-                      </semantic-table>
-                    </div>
-                  </div>
-                  {{> ::knowledgePanelFrame id='knowledge-panel'}}
-                </div>
-              </semantic-search-result>
-            </semantic-search-result-holder>
-          </div>
-        </semantic-search-result-holder>
+            {{> ::custom-searchResultGroupTemplate
+              showKnowledgePanel=true
+              showDomainSelector=true
+              showExplorationFacets=true
+              showSaveSearchResultActions=true
+            }}
+          </template>
+        </semantic-search-result-group>
       </div>
     </semantic-search>
   </div>
 </div>
+
+<template-fragment export id='custom-searchResultGroupTemplate' params='{
+  "showExplorationFacets": {
+    "required": false,
+    "type":"boolean",
+    "default": true,
+    "description": "If enabled, facets will be shown when exploring all entities of a domain without further search conditions being formulated. Consider to disable this option to improve performance on large datasets with millions of entities."
+  },
+  "showDomainSelector": {
+    "required": false,
+    "type":"boolean",
+    "default": true,
+    "description": "If enabled, the domain selector will be shown in the search results for configured categories."
+  },
+  "showKnowledgePanel": {
+    "required": false,
+    "type": "boolean",
+    "default": false,
+    "description": "If enabled, the knowledge panel for a corresponding resource will be shown when clicking on the title of a search result item."
+  },
+  "showSaveSearchResultActions": {
+    "required": false,
+    "type": "boolean",
+    "default": false,
+    "description": "If enabled, the search result action \"Save Set\" will be shown when a domain is selected."
+  },
+  "enableMultiExploreRelated": {
+    "required": false,
+    "type": "boolean",
+    "default": "true",
+    "description": "If enabled, search results can be selected to explore results for any of them."
+  }
+}'>
+  [[!--
+    Note that it's not recommended to modify this fragment.
+    Refer to the top of the page for more information.
+  --]]
+  <div class='domainSelectorAndFacets'>
+    {{#if (cond-not hasConjuncts)}}
+      {{#unless (cond-eq showDomainSelector false)}}
+      <semantic-search-query-universal-domain-selector target='{{queryFormulationComponentId}}'></semantic-search-query-universal-domain-selector>
+      {{/unless}}
+    {{/if}}
+    {{#if (cond-or (cond-neq showExplorationFacets false) keyword hasConjuncts)}}
+        <semantic-search-facet-holder>
+          <semantic-search-facet-group 
+            default-settings='{"sorting": "alpha-asc",
+            "headerTemplate": "{{> default-header}}"}'
+            variant='horizontal'>
+            <template id='default-header'>
+              <div class='SemanticSearchFacet--relationHeader croppableHeader'>
+                {{#if (cond-eq $relation.label.value "nobel prize")}}
+                <span class="material-symbols-outlined">award_star</span>&nbsp;{{$relation.label.value}}
+                {{else}}
+                {{#if (cond-eq $relation.label.value "category")}}
+                <span class="material-symbols-outlined">category</span>&nbsp;{{$relation.label.value}}
+                {{else}}
+                {{#if (cond-eq $relation.label.value "affiliation")}}
+                <span class="material-symbols-outlined">account_balance</span>&nbsp;{{$relation.label.value}}
+                {{else}}
+                {{#if (cond-eq $relation.label.value "date of birth")}}
+                <span class="material-symbols-outlined">cake</span>&nbsp;{{$relation.label.value}}
+                {{else}}
+                {{#if (cond-eq $relation.label.value "country")}}
+                <span class="material-symbols-outlined">location_on</span>&nbsp;{{$relation.label.value}}
+                {{else}}
+                {{#if (cond-eq $relation.label.value "gender")}}
+                <span class="material-symbols-outlined">transgender</span>&nbsp;{{$relation.label.value}}
+                {{else}}
+                {{#if (cond-eq $relation.label.value "year")}}
+                <span class="material-symbols-outlined">calendar_month</span>&nbsp;{{$relation.label.value}}
+                {{else}}
+                {{#if (cond-eq $relation.label.value "laureate")}}
+                <span class="material-symbols-outlined">school</span>&nbsp;{{$relation.label.value}}
+                {{else}}
+                {{$relation.label.value}}
+                {{/if}}
+                {{/if}}
+                {{/if}}
+                {{/if}}
+                {{/if}}
+                {{/if}}
+                {{/if}}
+                {{/if}}
+              </div>
+            </template>
+          </semantic-search-facet-group>
+        </semantic-search-facet-holder>
+    {{/if}}
+  </div>
+  <semantic-search-facet-breadcrumbs></semantic-search-facet-breadcrumbs>
+  <semantic-search-result-holder>
+    {{#if domain}}
+      <semantic-search-result domain='{{domain.iri}}'>
+        <div class='resultTemplate'>
+          {{#> @partial-block category=domain selected=true searchKeyword=keyword}}
+            {{> Platform:SearchResultsCustomization::custom-defaultResultsTemplate}}
+          {{/@partial-block}}
+        </div>
+      </semantic-search-result>
+      {{#if showSaveSearchResultActions}}
+        {{> ::search-result-save-set-action}}
+      {{/if}} 
+    {{else}}
+      {{#each categories as |category|}}
+        <div class='resultTemplate'>
+          <semantic-search-result domain='{{category.iri}}'>
+            {{#> @partial-block category=category selected=false searchKeyword=../keyword searchId=../searchId queryFormulationComponentId=../queryFormulationComponentId hasConjuncts=../hasConjuncts limit=../limit}}
+              {{> Platform:SearchResultsFragments::defaultResultsTemplate}}
+            {{/@partial-block}}
+          </semantic-search-result>
+        </div>
+      {{/each}}
+    {{/if}}
+  </semantic-search-result-holder>
+</template-fragment>
+
+<template-fragment id='search-result-save-set-action'>
+  <div class='saveSearchAsSet'>
+    <semantic-search-action-save-set-result id='save-set-result-action'>
+      <button class="btn btn-outline-secondary">Save As Set</button>
+    </semantic-search-action-save-set-result>
+  </div>
+</template-fragment>

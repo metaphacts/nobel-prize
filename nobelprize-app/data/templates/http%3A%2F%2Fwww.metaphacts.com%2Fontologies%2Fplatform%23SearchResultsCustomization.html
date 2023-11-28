@@ -1,0 +1,455 @@
+<template-fragment export id='custom-defaultResultsTemplate'>
+  <div class="resultContainer">
+    <mp-event-combine listen-events='[
+      {"property": "selectEntityCheckbox", "source": "selectEntityCheckbox"},
+      {"property": "unselectedEntity", "source": "unselectEntityButton"}
+    ]' trigger-template='{{> t}}'>
+      <template id='t'>
+        {{#if (cond-eq cause "selectEntityCheckbox")}}
+          {{#if state.selectEntityCheckbox.checked}}
+            <mp-event-combine-set
+              property='selectedEntities'
+              value='{{pass-value (array-concat (if state.selectedEntities state.selectedEntities (array-of)) (array-of state.selectEntityCheckbox.iri))}}'>
+            </mp-event-combine-set>
+          {{else}}
+            <mp-event-combine-set
+              property='selectedEntities'
+              value='{{pass-value (array-filter state.selectedEntities (func topic (cond-neq topic state.selectEntityCheckbox.iri)))}}'>
+            </mp-event-combine-set>
+          {{/if}}
+        {{/if}}
+
+        {{#if (cond-eq cause "unselectedEntity")}}
+          <mp-event-combine-set
+            property='selectedEntities'
+            value='{{pass-value (array-filter state.selectedEntities (func topic (cond-neq topic state.unselectedEntity.iri)))}}'>
+          </mp-event-combine-set>
+          <mp-event-combine-emit
+            event-type='Component.TemplateUpdate' targets='["selectEntityCheckboxTemplate-{{state.unselectedEntity.iri}}"]' data='{"checked": false}'>
+          </mp-event-combine-emit>
+        {{/if}}
+
+        <mp-event-combine-emit event-type='Component.TemplateUpdate' targets='["custom-selectedEntitiesCard"]' data='{
+          "selectedEntities": "{{pass-value state.selectedEntities}}"
+        }'></mp-event-combine-emit>
+      </template>
+    </mp-event-combine>
+  <div data-flex-layout='row stretch-stretch'>
+    <div data-flex-self='md-full'>
+      <semantic-table
+        id='search-result-table'
+        query='
+          SELECT DISTINCT * WHERE {}
+          {{#if searchKeyword}}ORDER BY DESC(?score){{/if}} {{#unless selected}}LIMIT 4{{/unless}}
+        '
+        options='{"showFilter": false}'
+        tuple-template='{{> template}}'
+        no-result-template='{{#if domain}}{{> ::custom-noResultTemplate}}{{/if}}'
+        class='SearchCardResult--table'
+        prefetch-labels='false'
+      >
+        <template id='template'>
+          {{#> Platform:SearchResultsCustomization::resultsTemplate}}
+            {{#if (isIri subject)}}
+              <div class='SearchCardResult--card'>
+                {{#if (cond-eq category.iri "http://data.nobelprize.org/terms/Laureate")}}
+                <div class='SearchCardResult--contentWrapper'>
+                  <div style='display: flex; flex-direction: row'>
+                    <div>
+                      {{> ::custom-entityImage}}
+                    </div>
+                    <div>
+                    <div class='SearchCardResult--title'>
+                      <p><span class="material-symbols-outlined" style='font-size: 44px; '> school </span></p>
+                      {{#if (cond-eq showKnowledgePanel true)}}
+                      <h3>
+                        <!-- <mp-highlight-label iri="{{subject.value}}" highlight='{{searchKeyword}}' split-token='true'></mp-highlight-label> -->
+                        <mp-knowledge-panel-trigger iri='{{subject.value}}'></mp-knowledge-panel-trigger>
+                      </h3>
+                      {{/if}}
+                    </div>
+                    {{> Platform:SearchResultsCustomization::entityInfo kind="results" iri=subject.value type=category.iri}}
+                    </div>
+                  </div>
+                </div>
+                {{else}}
+                {{#if (cond-eq category.iri "http://data.nobelprize.org/terms/NobelPrize")}}
+                <div class='SearchCardResult--contentWrapper'>
+                  <div class='SearchCardResult--title'>
+                    <div style='display: flex; flex-direction: row'>
+                      <div>
+                        <p><span class="material-symbols-outlined" style='font-size: 44px; padding-right: 16px;'> award_star </span></p>
+                      </div>
+                      <div>
+                      {{#if (cond-eq showKnowledgePanel true)}}
+                      
+                        <!-- <mp-highlight-label iri="{{subject.value}}" highlight='{{searchKeyword}}' split-token='true'></mp-highlight-label> -->
+                        <mp-knowledge-panel-trigger iri='{{subject.value}}'></mp-knowledge-panel-trigger>
+                      
+                      {{/if}}
+                      {{> Platform:SearchResultsCustomization::entityInfo kind="results" iri=subject.value type=category.iri}}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {{/if}}
+                {{/if}}
+                <div class='SearchCardResult--buttons'>
+                  {{> ::custom-selectEntityCheckbox}}
+                  {{> ::custom-addToSearchButton subject=subject.value}}
+                </div>
+              </div>
+            {{else}}
+              <div class='SearchCardResult--card'>
+                <div class='SearchCardResult--contentWrapper'>
+                  <div class='SearchCardResult--title'>
+                    {{subject.value}}
+                  </div>
+                </div>
+              </div>
+            {{/if}}
+          {{/Platform:SearchResultsCustomization::resultsTemplate}}
+        </template>
+      </semantic-table>
+    </div>
+    <mp-knowledge-panel-frame></mp-knowledge-panel-frame>
+  </div>
+    {{> ::custom-selectedEntitiesCard}}
+  </div>
+  {{> ::custom-searchResultsHeader}}
+  {{> ::custom-searchResultsFooter}}
+</template-fragment>
+
+<template-fragment export id="custom-noResultTemplate">
+  <div class='SearchQueryUniversal--noResultTemplate'>
+    <div class='material-symbols-outlined SearchQueryUniversal--noResultTemplateIcon' aria-hidden="true">
+      hide_source
+    </div>
+    <div class='SearchQueryUniversal--noResultTemplateTitle'>
+      {{#if latestSearchTerm}}
+        No results for “{{latestSearchTerm}}”
+      {{else}}
+        No results for your criteria
+      {{/if}}
+    </div>
+    <div>
+      {{#if latestSearchTerm}}
+        Consider rephrasing or clearing your search
+      {{else}}
+        Consider revising or clearing your search
+      {{/if}}
+    </div>
+    <mp-event-trigger type='UniversalSearch.ClearSearch' targets='["{{queryFormulationComponentId}}"]'>
+      <button class='btn btn-sm btn-outline-danger SearchQueryUniversal--noResultTemplateButton'>
+        Clear search
+      </button>
+    </mp-event-trigger>
+  </div>
+</template-fragment>
+
+<template-fragment id="entityInfo" export>
+  <semantic-search-query-universal-entity-infos iri="{{iri}}" type="{{type}}" kind="{{kind}}">
+    <semantic-search-query-universal-entity-info for='["http://data.nobelprize.org/terms/Laureate"]' 
+      visualization='{
+        "disambiguation": {
+          "query": "
+            SELECT DISTINCT (SAMPLE(?desc) as ?description) WHERE {
+              ?subject owl:sameAs ?obj.
+              FILTER (!isBlank(?obj))
+              SERVICE wiki:sparql {
+                ?obj schema:description ?desc.
+                FILTER LANGMATCHES( lang(?desc), \"en\" )  
+              }
+            }",
+          "template": "{{> disambiguationTemplate}}"
+        },
+        "results": {
+          "query": "
+            SELECT DISTINCT ?nobel ?Nlabel ?motivation (SAMPLE(?desc) as ?description) WHERE {
+              ?subject <http://data.nobelprize.org/terms/laureateAward> ?laureateAward.
+              ?laureateAward <http://data.nobelprize.org/terms/motivation> ?motivation.
+              ?laureateAward ^<http://purl.org/dc/terms/hasPart> ?nobel.
+              ?nobel rdfs:label ?Nlabel.
+              FILTER(LANG(?motivation)=\"en\")
+              FILTER(LANG(?Nlabel)=\"en\")
+              ?subject owl:sameAs ?obj.
+              FILTER (!isBlank(?obj))
+              SERVICE wiki:sparql {
+                ?obj schema:description ?desc.
+                FILTER LANGMATCHES( lang(?desc), \"en\" )  
+              }
+          } GROUP BY ?nobel ?Nlabel ?motivation",
+          "template": "{{> resultsTemplate}}"
+        }
+      }'>
+      <template id="disambiguationTemplate">
+        <span class="separator"></span>
+        {{#each bindings}}{{description.value}}{{/each}}
+      </template>
+      <template id="resultsTemplate">
+        {{#each bindings}}
+        <p>{{description.value}}</p>
+        <div style='display: flex; flex-direction: row;' >
+
+          <div>
+            <semantic-link iri='{{nobel.value}}'></semantic-link>
+            <p class='small'>Awarded with <span style='text-transform: lowercase;'>{{string-slice Nlabel.value 0 -4}}</span> {{motivation.value}}</p>
+          </div>
+        </div>
+        {{/each}}
+      </template>
+    </semantic-search-query-universal-entity-info>
+    <semantic-search-query-universal-entity-info for='["http://data.nobelprize.org/terms/NobelPrize"]' 
+      visualization='{
+        "disambiguation": {
+          "query": "
+            SELECT DISTINCT (SAMPLE(?desc) as ?description) WHERE {
+              ?subject owl:sameAs ?obj.
+              FILTER (!isBlank(?obj))
+              SERVICE wiki:sparql {
+                ?obj schema:description ?desc.
+                FILTER LANGMATCHES( lang(?desc), \"en\" )  
+              }
+            }",
+          "template": "{{> disambiguationTemplate}}"
+        },
+        "results": {
+          "query": "
+            SELECT DISTINCT (GROUP_CONCAT(DISTINCT STR(?name) ; separator=\", \") as ?laureates) ?category ?year (GROUP_CONCAT(DISTINCT STR(?motivation) ; separator=\" & \") as ?motivations) WHERE {
+              ?subject <http://data.nobelprize.org/terms/category> ?category;
+                <http://data.nobelprize.org/terms/year> ?year;
+                ^<http://data.nobelprize.org/terms/nobelPrize> ?laureate;
+                <http://purl.org/dc/terms/hasPart> ?LaureateAward.
+            ?LaureateAward <http://data.nobelprize.org/terms/laureate> ?Laureate;
+                          <http://data.nobelprize.org/terms/motivation> ?motivation.
+            ?laureate rdfs:label ?name.
+            FILTER(LANG(?motivation)=\"en\")
+          } GROUP BY ?category ?year",
+          "template": "{{> resultsTemplate}}"
+        }
+      }'>
+      <template id="disambiguationTemplate">
+        <span class="separator"></span>
+        {{#each bindings}}{{description.value}}{{/each}}
+      </template>
+      <template id="resultsTemplate">
+        {{#each bindings}}
+        <div style='display: flex; flex-direction: row;' >
+
+          <div>
+            <p style='font-size: small; padding-top: 8px;'>The Nobel Prize in <mp-label iri="{{category.value}}"></mp-label> {{year.value}} was awarded to {{laureates.value}} "{{motivations.value}}"</p>
+          </div>
+        </div>
+        {{/each}}
+      </template>
+    </semantic-search-query-universal-entity-info>
+  </semantic-search-query-universal-entity-infos>
+</template-fragment>
+
+<template-fragment id='custom-entityImage'>
+  <semantic-query 
+    query='
+      SELECT DISTINCT (REPLACE(STR(SAMPLE(?images)), "http", "https", "i") AS ?image) WHERE {
+        <{{subject.value}}> owl:sameAs ?entity.
+        FILTER (!isBlank(?entity))
+        SERVICE wiki:sparql {
+          ?entity wdt:P18 ?images.
+        } 
+      }'
+    template='{{> template}}'>
+    <template id='template'>
+      {{#each bindings}}
+      <div style='padding-right: 16px;'>
+        <img src='{{image.value}}' style="height: 200px; width: 150px; object-fit: cover;">
+      </div>
+      {{/each}}
+    </template>
+  </semantic-query>
+</template-fragment>
+
+<template-fragment export id="custom-addToSearchButton">
+  {{#if (cond-or (cond-not hasConjuncts) show)}}
+    <mp-event-trigger
+      type='UniversalSearch.ShowRelated'
+      targets='["{{queryFormulationComponentId}}"]'
+      data='{"entityIris": "{{pass-value (if selectedEntities selectedEntities (array-of subject))}}"}'>
+      <button class='btn btn-link btn-unsized SearchCardResult--rightArrowButton'>
+        Explore related
+      </button>
+    </mp-event-trigger>
+  {{/if}}
+</template-fragment>
+
+<template-fragment id="custom-selectEntityCheckbox">
+  {{#if (cond-and domain (cond-not hasConjuncts) (cond-or (cond-eq enableMultiExploreRelated undefined) enableMultiExploreRelated))}}
+    <mp-event-target-template-render id='selectEntityCheckboxTemplate-{{subject.value}}' template='{{>t}}'>
+      <template id='t'>
+        <div style="min-width: 110px;">
+          <mp-event-trigger
+            id="selectEntityCheckbox"
+            type='Component.TemplateUpdate'
+            targets='["selectEntityCheckboxTemplate-{{subject.value}}"]'
+            data='{"checked": "{{#if (cond-eq checked true)}}{{pass-value false}}{{else}}{{pass-value true}}{{/if}}", "iri": "{{subject.value}}"}'>
+            {{#if checked}}
+              <label class="form-check SearchCardResult--selectEntityCheckbox SearchCardResult--selected mb-2">
+                <input type="checkbox" class="form-check-input" value='{{subject.value}}' defaultChecked />
+                <span class="small">Selected</span>
+              </label>
+            {{else}}
+              <label class="form-check SearchCardResult--selectEntityCheckbox mb-2">
+                <input type="checkbox" class="form-check-input" value='{{subject.value}}' />
+                <span class="small">Select entity</span>
+              </label>
+            {{/if}}
+          </mp-event-trigger>
+        </div>
+      </template>
+    </mp-event-target-template-render>
+  {{/if}}
+</template-fragment>
+
+<template-fragment id="custom-selectedEntitiesCard">
+  <mp-event-target-template-render id='custom-selectedEntitiesCard' template='{{>t}}'>
+    <template id='t'>
+      {{#if selectedEntities}}
+        <div class="custom-selectedEntitiesCardContainer">
+          <div class="custom-selectedEntitiesCard selectedEntities">
+            <div class="lead" style="font-weight: 500;">Entities</div>
+            {{#each selectedEntities as |entity|}}
+              <div>
+                <mp-label iri='{{entity}}' class='selectedEntityLabel'></mp-label>
+                <mp-event-trigger
+                  id="unselectEntityButton"
+                  type='Component.TemplateUpdate'
+                  data='{"iri": "{{entity}}"}'>
+                  <button class="btn btn-sm btn-icon btn-outline-danger" style="flex: 0 0 24px;"><span class="material-symbols-outlined" aria-hidden='true' title='delete'>delete</span></button>
+                </mp-event-trigger>
+              </div>
+            {{/each}}
+            <div class="mt-2">
+              <div>{{selectedEntities.length}} {{#if (cond-neq selectedEntities.length 1)}}Entities{{else}}Entity{{/if}}</div>
+              {{> ::custom-addToSearchButton show=true selectedEntities=selectedEntities}}
+            </div>
+          </div>
+        </div>
+      {{/if}}
+    </template>
+  </mp-event-target-template-render>
+</template-fragment>
+
+<template-fragment export id='custom-searchResultsHeader'>
+  {{#if selected}}
+    <div class='resultHeader selected'>
+      {{> ::custom-searchResultsHeaderInner}}
+    </div>
+  {{else}}
+    <mp-event-trigger
+      type='UniversalSearch.SelectDomain'
+      targets='["{{queryFormulationComponentId}}"]'
+      data='{"domainIri": "{{category.iri}}"}'>
+      <a href='#' class='resultHeader'>
+        {{> ::custom-searchResultsHeaderInner}}
+      </a>
+    </mp-event-trigger>
+  {{/if}}
+</template-fragment>
+
+<template-fragment export id='custom-searchResultsFooter'>
+  {{#if (cond-neq selected true)}}
+    <div class='resultFooter'>
+      <mp-event-trigger
+        type='UniversalSearch.SelectDomain'
+        targets='["{{queryFormulationComponentId}}"]'
+        data='{"domainIri": "{{category.iri}}"}'>
+        <button class='btn btn-link btn-unsized SearchCardResult--rightArrowButton SearchCardResult--viewAllButton'>
+          View all
+        </button>
+      </mp-event-trigger>
+    </div>
+  {{/if}}
+</template-fragment>
+
+<template-fragment id='custom-searchResultsHeaderInner'>
+  <div class='resultHeader {{#if (cond-eq selected true)}}selected{{/if}}'>
+    {{#if selected}}
+      <semantic-search-result-count result-id='search-result-table'
+        template='{{> counts}}'>
+        <template id='counts'>
+          <div class='resultCount'>
+            {{#if (cond-gte numberOfResults limit)}}
+              {{number-format limit locale='en' notation='compact' compactDisplay='long'}}+
+            {{else}}
+              {{number-format numberOfResults locale='en'}}
+            {{/if}}
+            {{#if (cond-eq numberOfResults 1)}}
+              result in&nbsp;
+            {{else}}
+              results in&nbsp;
+            {{/if}}
+          </div>
+          <div class='loaded-counts-explanation'>
+            <semantic-search-query-universal-explanation domain-iri='{{category.iri}}'>
+            </semantic-search-query-universal-explanation>
+          </div>
+          {{#if (cond-gte numberOfResults limit)}}
+            <div>
+              &nbsp;<mp-popover>
+                <mp-popover-trigger placement="top"
+                  trigger='["click", "hover", "focus"]'
+                  root-close='false'>
+                  <button class="btn btn-sm btn-icon btn-transparent">
+                      <span class="material-symbols-outlined resultCountInfo">info</span>
+                    </button>
+                </mp-popover-trigger>
+                <mp-popover-content>Only the first {{number-format limit locale='en' notation='compact' compactDisplay='long'}} results are shown</mp-popover-content>
+              </mp-popover>
+            </div>
+          {{/if}}
+        </template>
+      </semantic-search-result-count>
+    {{else}}
+      <mp-sparql-result-counts
+        id='result-counts'
+        query='SELECT DISTINCT * {}'
+        hard-limit='{{number-add limit 1}}'
+        template='{{> counts}}'>
+        <template id='counts'>
+          <div class='resultCount'>
+            {{#if (cond-gte numberOfResults limit)}}
+              {{number-format limit locale='en' notation='compact' compactDisplay='long'}}+
+            {{else}}
+              {{number-format numberOfResults locale='en'}}
+            {{/if}}
+            {{#if (cond-eq numberOfResults 1)}}
+              result in&nbsp;
+            {{else}}
+              results in&nbsp;
+            {{/if}}
+          </div>
+          <div class='loaded-counts-explanation'>
+            <semantic-search-query-universal-explanation domain-iri='{{category.iri}}'>
+            </semantic-search-query-universal-explanation>
+          </div>
+          {{#if (cond-gte numberOfResults 10000)}}
+            <div>
+              &nbsp;<mp-popover>
+                <mp-popover-trigger placement="top"
+                  trigger='["click", "hover", "focus"]'
+                  root-close='false'>
+                  <button class="btn btn-sm btn-icon btn-transparent">
+                      <span class="material-symbols-outlined resultCountInfo">info</span>
+                    </button>
+                </mp-popover-trigger>
+                <mp-popover-content>Only the first {{number-format limit locale='en' notation='compact' compactDisplay='long'}} results are shown</mp-popover-content>
+              </mp-popover>
+            </div>
+          {{/if}}
+        </template>
+      </mp-sparql-result-counts>
+    {{/if}}
+    <div class='loading-counts-explanation'>
+      <semantic-search-query-universal-explanation domain-iri='{{category.iri}}'>
+      </semantic-search-query-universal-explanation>
+    </div>
+  </div>
+</template-fragment>
