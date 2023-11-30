@@ -22,9 +22,9 @@ Please note that the bundle was created by metaphacts GmbH solely for exploratio
 Niether the bundle nor metaphacts are associated with the Nobel Prize Foundation and its website.
 ## What is in the bundle 
 * The original data dump 'nobel-prize-dataset.trig' was retrieved and cached from https://data.nobelprize.org/sparql
-* `nobel-prize-dataset-place-hierachy-extension.trig` was created as an extension by metaphacts taking nobel-prize-dataset.trig as input. The place hierarchy has been constructed utilizing the knowledge within the data and by the help of federation to wikidata/dbpedia.
-* `nobel-prize-metaphacts-shacl-ontology.trig` was created by metaphacts based on the original nobel prize ontology [published](https://data.nobelprize.org/specification/) by the Nobel Prize Foundation
-* `nobel-prize-metaphacts-skos-vocabulary.trig` was created by metaphacts to handle the vocabulary terms within metaphactory, the identifiers of the "category" individuals from the official Nobel Prize OWL ontology have been reused and turned into a vocabulary (defined as SKOS scheme). Additionally, the terms have been augmented and enriched with additional structure and metadata solely for exploration and demonstration purpose.
+* `nobel-prize-dataset-place-hierachy-extension.trig` was created as an extension by metaphacts taking `nobel-prize-dataset.trig` as input. The place hierarchy has been constructed utilizing the knowledge within the data and with the help of federation to wikidata/dbpedia.
+* `nobel-prize-metaphacts-shacl-ontology.trig` was created by metaphacts based on the original nobel prize ontology [published](https://data.nobelprize.org/specification/) by the Nobel Prize Foundation.
+* `nobel-prize-metaphacts-skos-vocabulary.trig` was created by metaphacts to handle the vocabulary terms within metaphactory. The identifiers of the "category" individuals from the official Nobel Prize OWL ontology have been reused and turned into a vocabulary (defined as SKOS scheme). The terms also have been augmented and enriched with additional structure and metadata solely for exploration and demonstration purpose.
 ## License
 For the original nobel prize data the official license and terms of usage apply, i.e. please refer to https://data.nobelprize.org/specification/ and https://www.nobelprize.org/about/terms-of-use-for-api-nobelprize-org-and-data-nobelprize-org/ .
 # Feedback
