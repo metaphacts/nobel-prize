@@ -100,45 +100,47 @@
         {{#each bindings}}
           <bs-card style='margin: 5px; width: 100%;'>
             <bs-card-body>
-              <semantic-query 
-                query='
-                  SELECT DISTINCT (REPLACE(STR(SAMPLE(?images)), "http", "https", "i") AS ?image) WHERE {
-                    {{laureate}} owl:sameAs ?entity.
-                    FILTER (!isBlank(?entity))
-                    SERVICE wiki:sparql {
-                      ?entity wdt:P18 ?images.
-                    } 
-                  }'
-                template='{{> template}}'>
-              <template id='template'>
-                {{#each bindings}}
-                <div style='padding-right: 16px;'>
-                  <img src='{{image.value}}' style="height: 50px; width: 45px; object-fit: cover;">
-                </div>
-                {{/each}}
-              </template>
-              </semantic-query>
-              <div> 
-                <bs-card-title class="text-break title-kp mb-1">
-                  <h2 class='h5' style='color: #bb8a35;'><semantic-link iri="{{laureate.value}}"></semantic-link></h2>
-                </bs-card-title>
+              <div style='display: flex; flex-direction: row'>
                 <semantic-query 
                   query='
-                  SELECT DISTINCT ?desc  WHERE {
-                    {{laureate}} owl:sameAs ?entity.
-                    FILTER (!isBlank(?entity))
-                    SERVICE wiki:sparql {
-                      ?entity <http://schema.org/description> ?desc.
-                      FILTER(LANG(?desc)="en")
-                    }    
-                  } '
+                    SELECT DISTINCT (REPLACE(STR(SAMPLE(?images)), "http", "https", "i") AS ?image) WHERE {
+                      {{laureate}} owl:sameAs ?entity.
+                      FILTER (!isBlank(?entity))
+                      SERVICE wiki:sparql {
+                        ?entity wdt:P18 ?images.
+                      } 
+                    }'
                   template='{{> template}}'>
                 <template id='template'>
                   {{#each bindings}}
-                  <p style="font-size: smaller;">{{desc.value}}</p>
+                  <div style='padding-right: 16px;'>
+                    <img src='{{image.value}}' style="height: 50px; width: 45px; object-fit: cover;">
+                  </div>
                   {{/each}}
                 </template>
                 </semantic-query>
+                <div> 
+                  <bs-card-title class="text-break title-kp mb-1">
+                    <h2 class='h5' style='color: #bb8a35;'><semantic-link iri="{{laureate.value}}"></semantic-link></h2>
+                  </bs-card-title>
+                  <semantic-query 
+                    query='
+                    SELECT DISTINCT ?desc  WHERE {
+                      {{laureate}} owl:sameAs ?entity.
+                      FILTER (!isBlank(?entity))
+                      SERVICE wiki:sparql {
+                        ?entity <http://schema.org/description> ?desc.
+                        FILTER(LANG(?desc)="en")
+                      }    
+                    } '
+                    template='{{> template}}'>
+                  <template id='template'>
+                    {{#each bindings}}
+                    <p style="font-size: smaller;">{{desc.value}}</p>
+                    {{/each}}
+                  </template>
+                  </semantic-query>
+                </div>
               </div>
             </bs-card-body>
           </bs-card>

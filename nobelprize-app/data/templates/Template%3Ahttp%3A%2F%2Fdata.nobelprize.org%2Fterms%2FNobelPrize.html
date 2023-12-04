@@ -76,7 +76,7 @@
   <div class='page'>
     <div class='custom-page-header'>
       <div style='margin-bottom: 16px;'>
-        <img height='50px' src='/assets/nobel.svg'><br>
+        <span class="material-symbols-outlined" style='font-size: 50px;'>award_star</span>
       </div>
       <span style='font-size: 30px;'><b><mp-label iri='{{page-resource}}'></mp-label></b></span>
       <semantic-query
@@ -140,7 +140,7 @@
                     </semantic-query>
                     <div> 
                       <bs-card-title class="text-break title-kp mb-1">
-                        <semantic-link iri="{{laureate.value}}"></semantic-link>
+                        <h3><b><semantic-link iri="{{laureate.value}}"></semantic-link></b></h3>
                       </bs-card-title>
                       <semantic-query 
                         query='
@@ -234,9 +234,9 @@
               <div class='row'>
                 <div class='col-sm-6'>
                   <div style='display: flex; flex-direction: row;' >
-                  <!-- image -->
+                  <!-- icon -->
                     <div style='padding-right: 8px;'>
-                      <img height='25' src='/assets/nobel.svg'>
+                      <span class="material-symbols-outlined" style='font-size: 25px;'>award_star</span>
                     </div>
   
                     <!-- header & category -->
