@@ -59,28 +59,7 @@
     width: 265px;
     padding: 0;
     font-size: 12px;
-  }
-  
-  .additional-information {
-    display: grid; 
-    padding-top: 8px; 
-    grid-template-columns: repeat(2, 1fr); 
-    gap: 10px;
-    width: 50%;
-  }
-  
-  ul {
-    list-style: none;
-  }
-  
-  ul li::before {
-    content: "\2022";
-    color: #bb8a35;
-    display: inline-block; 
-    width: 1em;
-    margin-left: -1em;
-  }
-  
+  }  
   </style>
   
   <div class='page'>
@@ -149,7 +128,7 @@
             {{#each bindings}}
             <div style='display: flex; flex-direction: row;' >
               <div style='padding-right: 8px;'>
-                <img height='35' src='/assets/nobel.svg' alt=''>
+                <span class="material-symbols-outlined" style='font-size: 35px;'>award_star</span>
               </div>
               <div>
                 <h4 style='line-height: 30px;'><b><semantic-link iri="{{nobel.value}}"></semantic-link></b></h4>
