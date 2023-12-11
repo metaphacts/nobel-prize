@@ -1,5 +1,5 @@
 # stand-alone-templates
-This folder hosts stand-alone templates that are referred to in the blog post publihsed on AWS Partner network (APN) {link to be provided when the post is live]. 
+This folder hosts stand-alone templates that are referred to in the blog post published on AWS Partner network (APN) {link to be provided when the post is live]. 
 The post is a Part 2 of the post series entitled "Exploring Knowledge Graphs on Amazon Neptune Using Metaphactory". 
 The Part 2 specifically talks about:
 * Building end-user search interfaces and using templates to create rich data visualizations
