@@ -19,7 +19,9 @@ We recommend deploying the app in a fresh metaphactory installation.
 # Nobel Prize bundle
 Please note that the bundle was created by metaphacts GmbH solely for exploration and demonstration purpose. 
 
-Niether the bundle nor metaphacts are associated with the Nobel Prize Foundation and its website.
+Neither the bundle nor metaphacts are associated with the Nobel Prize Foundation and its website.
+
+The Nobel Prize bundle can be downloaded at: https://metaphacts-datasets.s3.amazonaws.com/nobel-prize-bundle.trig.gz
 ## What is in the bundle 
 * The original data dump 'nobel-prize-dataset.trig' was retrieved and cached from https://data.nobelprize.org/sparql
 * `nobel-prize-dataset-place-hierachy-extension.trig` was created as an extension by metaphacts taking `nobel-prize-dataset.trig` as input. The place hierarchy has been constructed utilizing the knowledge within the data and with the help of federation to wikidata/dbpedia.
