@@ -39,7 +39,7 @@
       <semantic-table
         id='search-result-table'
         query='
-          SELECT DISTINCT * WHERE {}
+          SELECT DISTINCT ?subject WHERE {}
           {{#if searchKeyword}}ORDER BY DESC(?score){{/if}} {{#unless selected}}LIMIT 4{{/unless}}
         '
         options='{"showFilter": false}'
