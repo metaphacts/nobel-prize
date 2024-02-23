@@ -3,11 +3,14 @@
   <div style='padding-bottom: 32px'>
     <div class="text-center">
       <h1 style='padding-top: 24px;'><b>Welcome to metaphactory</b></h1>
-      <p>This demo system is based on the open Nobel Prize knowledge graph!</p>
+      <h4>
+      <p>This demo system is based on the open Nobel Prize knowledge graph</p></h4>
+      <h6>
+      <p>If you are interested to see how this demo is built, <br> feel free to check out its source code on <a href='https://github.com/metaphacts/nobel-prize' target='_blank'>github</a>.</p></h6>
     </div>
   </div>
   <div class="text-center">
-    <img src='/assets/nobel-logo.svg'>
+    <img style='height: 80px' src='/assets/nobel-logo.svg'>
   </div>
   <div class='nobelSearch' style="padding-top: 32px;">  
     {{> Platform:SearchResultsFragments::defaultStyle}}
@@ -188,6 +191,14 @@
       </div>
     </semantic-search>
   </div>
+    <div style="padding-bottom: 24px; padding-top: 24px;">
+      <div class="text-center" style="font-size: 12px;">
+          Powered by <a href="https://metaphacts.com/product" target="_blank"><img height="15" style="top: 0px; position: relative;" src="https://wikidata-new.metaphacts.net/assets/no_auth/images/metaphactory-logo-horizontal.png"></a>. <br>With any feedback or questions, <br>please reach out to info@metaphacts.com. 
+
+      </div>
+    </div>
+
+
 </div>
 
 <template-fragment export id='custom-searchResultGroupTemplate' params='{
