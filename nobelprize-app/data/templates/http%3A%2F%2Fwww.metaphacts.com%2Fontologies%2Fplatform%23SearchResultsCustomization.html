@@ -59,13 +59,11 @@
                       {{> ::custom-entityImage}}
                     </div>
                     <div>
-                    <div class='SearchCardResult--title'>
-                      <p><span class="material-symbols-outlined" style='font-size: 44px; '> school </span></p>
-                      {{#if (cond-eq showKnowledgePanel true)}}
-                      <h3>
+                    <div class='SearchCardResult--title'>                      {{#if (cond-eq showKnowledgePanel true)}}
+                      <h4 style='margin-top:6px'>
                         <!-- <mp-highlight-label iri="{{subject.value}}" highlight='{{searchKeyword}}' split-token='true'></mp-highlight-label> -->
                         <mp-knowledge-panel-trigger iri='{{subject.value}}'></mp-knowledge-panel-trigger>
-                      </h3>
+                      </h4>
                       {{/if}}
                     </div>
                     {{> Platform:SearchResultsCustomization::entityInfo kind="results" iri=subject.value type=category.iri}}
