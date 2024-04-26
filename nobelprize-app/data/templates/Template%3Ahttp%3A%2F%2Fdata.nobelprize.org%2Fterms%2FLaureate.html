@@ -99,14 +99,13 @@
         <template id='tpl'>
           {{#each bindings}}
           <div>
-            <img height='365' width='auto' src='{{image.value}}' alt=''>
+            <img height='250' width='auto' src='{{image.value}}' alt=''>
           </div>
           {{/each}}
         </template>
       </semantic-query>
-      <div style='padding: 0px 16px 16px 16px;'>
-        <p><span class="material-symbols-outlined" style='font-size: 64px;'>school</span></p>
-        <h1 style='font-size: xx-large;'><mp-label iri='{{page-resource}}'></mp-label></h1>
+      <div style='padding: 24px 0px 0px 16px;'>
+        <h2 style='color: #bb8a35'><mp-label iri='{{page-resource}}'></mp-label></h2>
         <!--fetching the short description about the laureate from wikidata and filtering out all, but those in English-->
         <semantic-query
           query='
@@ -121,7 +120,7 @@
           template='{{> template}}'>
         <template id='template'>
           {{#each bindings}}
-          <h4 style='margin-top: -8px; color: #bb8a35;'>{{description.value}}</h4><br>
+          <h3>{{description.value}}</h3><br>
           {{/each}}
         </template>
         </semantic-query>
@@ -255,9 +254,9 @@
       <!--End of navbar-->
   
       <!--Content for page sections-->
-      <div class='main-content'>
+      <div class='main-content' style='padding-top:24px'>
         <!--Key facts section: fetching the data of birth and data of death from Nobel prize dataset and providing addtional styling for it (icons, only Eng labels, etc)-->
-        <h2 id='facts'>Key facts</h2>
+        <h3 style='color: #bb8a35' id='facts'>Key facts</h3>
         <semantic-query query='
           SELECT DISTINCT ?dob ?birthCityLabel (GROUP_CONCAT(DISTINCT(?birthCountryLabel);SEPARATOR="/") AS ?birthCountryLabels) ?death ?deathCityLabel (GROUP_CONCAT(DISTINCT(?deathCountryLabel);SEPARATOR="/") AS ?deathCountryLabels) WHERE {
             BIND (?? as ?subject)
@@ -342,7 +341,7 @@
         <!--End of Key facts section-->
   
         <!--Biography section. We are fetching the biography: by the VIAF dataset ID we find the corresponding abstract in Dbpedia dataset and then provide the "Show more", "Show less" buttons -->
-        <div id='biography' style='width: 50%; padding-top: 8px;'>
+        <div id='biography' style='width: 50%;padding-top: 24px;  '>
         <semantic-query
           query='
             SELECT DISTINCT ?o (SAMPLE(?ids) as ?id) WHERE {
@@ -368,7 +367,7 @@
                 }'
               template='{{> template}}'>
               <template id='template'>
-                {{#each bindings}}{{#if sourceID}}<h2>Biography</h2>{{/if}}{{/each}}
+                {{#each bindings}}{{#if sourceID}}<h3 style='color: #bb8a35'>Biography</h3>{{/if}}{{/each}}
               </template>
             </semantic-query>
             {{/each}}
@@ -415,8 +414,8 @@
         <!--End of Biography section-->
   
         <!--Lifetime section: we employ here the timeline component on which we map the data of birth, data of death and the year of the Nobel Prize award-->
-        <h2 id='timeline'>Lifetime</h2>
-          <div style='padding-top: 16px;'>
+        <h3 style='color: #bb8a35' id='timeline'>Lifetime</h3>
+          <div style='padding-top: 8px;'>
             <semantic-timeline id='timeline' no-result-template='No information available'
               query='
                 SELECT DISTINCT ?start ?label WHERE {
@@ -458,7 +457,7 @@
             template='{{> template}}'>
           <template id='template'>
             {{#each bindings}}
-            {{#if entity}}<h2 id='notable-work'>Notable Work</h2>{{/if}}
+            {{#if entity}}<h3 style='color: #bb8a35' id='notable-work'>Notable Work</h3>{{/if}}
             {{/each}}
           </template>
           </semantic-query>
@@ -511,7 +510,7 @@
             template='{{> template}}'>
           <template id='template'>
             {{#each bindings}}
-            {{#if entity}}<h2 id='award'>Other awards</h2>{{/if}}
+            {{#if entity}}<h3 style='color: #bb8a35' id='award'>Other awards</h3>{{/if}}
             {{/each}}
           </template>
           </semantic-query>
@@ -552,7 +551,7 @@
             }
           }' template='{{>tpl }}'>
           <template id='tpl'>
-            {{#each bindings}}{{#if entity}}<h2 id='member'>Member of</h2>{{/if}}{{/each}}
+            {{#each bindings}}{{#if entity}}<h3 style='color: #bb8a35' id='member'>Member of</h3>{{/if}}{{/each}}
           </template>
         </semantic-query>
         <div class='additional-information' >

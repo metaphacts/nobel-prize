@@ -75,10 +75,9 @@
   
   <div class='page'>
     <div class='custom-page-header'>
-      <div style='margin-bottom: 16px;'>
-        <span class="material-symbols-outlined" style='font-size: 50px;'>award_star</span>
-      </div>
-      <span style='font-size: 30px;'><b><mp-label iri='{{page-resource}}'></mp-label></b></span>
+
+      <span class="material-symbols-outlined" style='font-size: 64px; color: #bb8a35'>award_star</span>
+      <h1 style='color: #bb8a35'><mp-label iri='{{page-resource}}'></mp-label></h1>
       <semantic-query
         query='
           SELECT DISTINCT (GROUP_CONCAT(DISTINCT STR(?name) ; separator=", ") as ?laureates) ?category ?year (GROUP_CONCAT(DISTINCT STR(?motivation) ; separator=" & ") as ?motivations) WHERE {
@@ -95,7 +94,7 @@
       <template id='template'>
         {{#each bindings}}
         <div class='page__body'>
-        <h2>The Nobel Prize in <mp-label iri="{{category.value}}"></mp-label> {{year.value}} was awarded to {{laureates.value}} "{{motivations.value}}"</h2>
+          <h3> Nobel Prize in <mp-label iri="{{category.value}}"></mp-label> {{year.value}} was awarded to {{laureates.value}} "{{motivations.value}}"</h3>
         </div>
         {{/each}}
       </template>
@@ -210,11 +209,11 @@
       template='{{> template}}'>
       <template id='template'>
         {{#each bindings}}
-        <span style='font-size: 25px; color: #cea152; padding-bottom: 16px;'>Other Nobel prizes in the year {{year.value}}</span>
+        <h3 style='color: #cea152'>Other Nobel prizes in the year {{year.value}}</h3>
         {{/each}}
       </template>
       </semantic-query>
-      <div data-flex-layout='row stretch-stretch'>
+      <div data-flex-layout='row stretch-stretch' style='margin-top: -8px'>
         <div data-flex-self='md-full'>
           <semantic-table
             query='
