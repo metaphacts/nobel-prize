@@ -156,6 +156,11 @@
       ]
     }'>
       <div class="search">
+        <style>
+          [data-flex-layout*=rows][data-flex-layout*=stretch-], [data-flex-layout*=columns][data-flex-layout*=-stretch] {
+            justify-content: center;
+          }
+        </style>
         <semantic-search-query-universal id="universal-search" 
         query='
           PREFIX Service: <http://www.metaphacts.com/ontologies/platform/service/>
